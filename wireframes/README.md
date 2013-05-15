@@ -14,12 +14,10 @@ there would be a route included as well.
 
 Contents
 --------
-[1. A Veteran can view their upcoming appointments](#1-a-veteran-can-view-their-upcoming-appointments)
-[2. A Veteran can email directions for their appointments in a day](#2-a-veteran-can-email-directions-for-their-appointments-in-a-day)
-[3. Volunteer Transportation Networks and Volunteers can organize pickups](#3-volunteer-transportation-networks-and-volunteers-can-organize-pickups)
-[4. Using Google's Data Analysis APIs](#4-using-googles-data-analysis-apis)
-
-
+1. [A Veteran can view their upcoming appointments](#1-a-veteran-can-view-their-upcoming-appointments)
+2. [A Veteran can email directions for their appointments in a day](#2-a-veteran-can-email-directions-for-their-appointments-in-a-day)
+3. [Volunteer Transportation Networks and Volunteers can organize pickups](#3-volunteer-transportation-networks-and-volunteers-can-organize-pickups)
+4. [Using Google's Data Analysis APIs](#4-using-googles-data-analysis-apis)
 1. A Veteran can view their upcoming appointments
 -------------------------------------------------
 
