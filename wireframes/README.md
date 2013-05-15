@@ -15,7 +15,7 @@ Wireframes and Ideas
 
 3. Volunteer Transportation Networks and Volunteers can organize pickups
 ------------------------------------------------------------------------
-![wireframe for a VTN organizing a route](https://github.com/openmash/mashmesh/blob/master/wireframes/vtn-organizes-pickups.png)
+![wireframe for a VTN organizing a route](https://raw.github.com/openmash/mashmesh/master/wireframes/vtn-organizes-pickups.png)
 
 ![wireframe for a VTN generating a pickup route](https://raw.github.com/openmash/mashmesh/master/wireframes/vtn-autogenerates-routes.png)
 
