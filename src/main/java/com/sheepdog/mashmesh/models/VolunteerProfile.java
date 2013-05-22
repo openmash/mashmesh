@@ -1,0 +1,222 @@
+package com.sheepdog.mashmesh.models;
+
+import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.search.*;
+import com.google.appengine.api.users.User;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Embed;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Unindex;
+import com.sheepdog.mashmesh.util.GeoUtils;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+@Entity
+public class VolunteerProfile {
+    private static final String INDEX_NAME = "volunteer-locations";
+    private static final double KILOMETERS_PER_MILE = 1.609344;
+    private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 50;
+    private static final int ESTIMATED_MILES_PER_HOUR = 40;
+
+    @Embed
+    private static class AppointmentTime {
+        private long startTime;
+        private long endTime;
+    }
+
+    @Id private String userId;
+    @Unindex private String documentId;
+    @Unindex private GeoPt location;
+    @Unindex private double maximumDistanceMiles = DEFAULT_MAXIMUM_DISTANCE_MILES;
+    @Unindex private List<AppointmentTime> appointmentTimes = new ArrayList<AppointmentTime>();
+
+    private double getAppointmentPaddingSeconds() {
+        return ESTIMATED_MILES_PER_HOUR * maximumDistanceMiles * 60 * 60;
+    }
+
+    public void addAppointmentTime(DateTime departureTime, DateTime arrivalTime) {
+        Duration commuteDuration = new Duration(departureTime, arrivalTime);
+        DateTime startTime = departureTime;
+        DateTime endTime = arrivalTime.plus(commuteDuration);
+
+        AppointmentTime appointmentTime = new AppointmentTime();
+        appointmentTime.startTime = startTime.getMillis();
+        appointmentTime.endTime = endTime.getMillis();
+
+        appointmentTimes.add(appointmentTime);
+    }
+
+    public boolean isTimeslotOccupied(DateTime dateTime) {
+        long dateTimeMillis = dateTime.getMillis();
+        int appointmentPaddingSeconds = (int) getAppointmentPaddingSeconds();
+
+        for (AppointmentTime appointmentTime : appointmentTimes) {
+            long startTimeMillis = appointmentTime.startTime - appointmentPaddingSeconds;
+            long endTimeMills = appointmentTime.endTime + appointmentPaddingSeconds;
+
+            if (startTimeMillis < dateTimeMillis && endTimeMills > dateTimeMillis) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public UserProfile getUserProfile() {
+        Key<UserProfile> userProfileKey = Key.create(UserProfile.class, getUserId());
+        return OfyService.ofy().load().key(userProfileKey).now();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public GeoPt getLocation() {
+        return location;
+    }
+
+    public void setLocation(GeoPt location) {
+        this.location = location;
+    }
+
+    public double getMaximumDistanceMiles() {
+        return maximumDistanceMiles;
+    }
+
+    public void setMaximumDistanceMiles(double maximumDistanceMiles) {
+        this.maximumDistanceMiles = maximumDistanceMiles;
+    }
+
+    public static Index getIndex() {
+        IndexSpec indexSpec = IndexSpec.newBuilder().setName(INDEX_NAME).build();
+        return SearchServiceFactory.getSearchService().getIndex(indexSpec);
+    }
+
+    public Document makeDocument(UserProfile userProfile) {
+        GeoPoint location = GeoUtils.convertToGeoPoint(userProfile.getLocation());
+        double maximumDistanceKilometers = maximumDistanceMiles * KILOMETERS_PER_MILE;
+        Document.Builder documentBuilder = Document.newBuilder()
+            .addField(Field.newBuilder().setName("userId").setText(getUserId()))
+            .addField(Field.newBuilder().setName("maximumDistance").setNumber(maximumDistanceKilometers))
+            .addField(Field.newBuilder().setName("location").setGeoPoint(location));
+
+        if (documentId != null) {
+            documentBuilder.setId(documentId);
+        }
+
+        return documentBuilder.build();
+    }
+
+    public void updateDocument(UserProfile userProfile) {
+        Index index = getIndex();
+        Document document = makeDocument(userProfile);
+        PutResponse response = index.put(document);
+        documentId = response.getIds().get(0);
+        // TODO: PutExceptions and transient errors.
+    }
+
+    public static VolunteerProfile getOrCreate(User user) {
+        Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, user.getUserId());
+        VolunteerProfile volunteerProfile = OfyService.ofy().load().key(volunteerProfileKey).now();
+
+        if (volunteerProfile == null) {
+            volunteerProfile = new VolunteerProfile();
+            volunteerProfile.setUserId(user.getUserId());
+        }
+
+        return volunteerProfile;
+    }
+
+    // TODO: Break out volunteer query logic
+    private static Query getEligibleVolunteerQuery(GeoPt patientLocation, GeoPt appointmentLocation) {
+        String sortString = String.format("distance(location, %s)", GeoUtils.formatGeoPt(patientLocation));
+        String queryString = String.format("distance(location, %s) < maximumDistance",
+                GeoUtils.formatGeoPt(patientLocation));
+
+        SortOptions sortOptions = SortOptions.newBuilder()
+                .addSortExpression(SortExpression.newBuilder()
+                        .setExpression(sortString)
+                        .setDefaultValueNumeric(20000)
+                        .setDirection(SortExpression.SortDirection.ASCENDING))
+                .build();
+        QueryOptions queryOptions = QueryOptions.newBuilder()
+                .setLimit(1000)
+                .setSortOptions(sortOptions)
+                .build();
+        return Query.newBuilder().setOptions(queryOptions).build("");//queryString);
+    }
+
+    private static Collection<VolunteerProfile> getVolunteerProfilesFromDocuments(
+            Collection<? extends Document> documents) {
+        List<Key<VolunteerProfile>> volunteerProfileKeys = new ArrayList<Key<VolunteerProfile>>();
+
+        for (Document document : documents) {
+            String userId = document.getOnlyField("userId").getText();
+            Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userId);
+            volunteerProfileKeys.add(volunteerProfileKey);
+        }
+
+        return OfyService.ofy().load().keys(volunteerProfileKeys).values();
+    }
+
+    private static Collection<VolunteerProfile> filterAvailableVolunteers(
+            Collection<VolunteerProfile> volunteerProfiles, DateTime appointmentTime) {
+        List<VolunteerProfile> availableVolunteerProfiles = new ArrayList<VolunteerProfile>();
+
+        for (VolunteerProfile volunteerProfile : volunteerProfiles) {
+            if (!volunteerProfile.isTimeslotOccupied(appointmentTime)) {
+                availableVolunteerProfiles.add(volunteerProfile);
+            }
+        }
+
+        return availableVolunteerProfiles;
+    }
+
+    private static Collection<VolunteerProfile> filterWillingVolunteers(
+            Collection<VolunteerProfile> volunteerProfiles, GeoPt patientGeoPt, GeoPt appointmentGeoPt) {
+        List<VolunteerProfile> willingVolunteerProfiles = new ArrayList<VolunteerProfile>();
+        double patientToAppointmentDistance = GeoUtils.distance(patientGeoPt, appointmentGeoPt);
+
+        for (VolunteerProfile volunteerProfile : volunteerProfiles) {
+            double volunteerToPatientDistance = GeoUtils.distance(volunteerProfile.getLocation(), patientGeoPt);
+            double maximumDistanceMiles = volunteerProfile.getMaximumDistanceMiles();
+            if (volunteerToPatientDistance + patientToAppointmentDistance < maximumDistanceMiles) {
+                willingVolunteerProfiles.add(volunteerProfile);
+            }
+        }
+
+        return willingVolunteerProfiles;
+    }
+
+    private static VolunteerProfile getClosestVolunteer(Collection<VolunteerProfile> volunteerProfiles) {
+        // TODO: Improve accuracy with the distance matrix API.
+        if (volunteerProfiles.size() == 0) {
+            return null;
+        } else {
+            return volunteerProfiles.iterator().next();
+        }
+    }
+
+    public static VolunteerProfile getEligibleVolunteer(GeoPt patientLocation, GeoPt appointmentLocation,
+                                                        DateTime appointmentTime) {
+        Query query = getEligibleVolunteerQuery(patientLocation, appointmentLocation);
+        Collection<? extends Document> documents = getIndex().search(query).getResults();
+        Collection<VolunteerProfile> volunteerProfiles = getVolunteerProfilesFromDocuments(documents);
+        Collection<VolunteerProfile> eligibleVolunteerProfiles = filterAvailableVolunteers(
+                volunteerProfiles, appointmentTime);
+        Collection<VolunteerProfile> willingVolunteerProfiles = filterWillingVolunteers(
+                eligibleVolunteerProfiles, patientLocation, appointmentLocation);
+        VolunteerProfile closestVolunteer = getClosestVolunteer(willingVolunteerProfiles);
+        // TODO: Raise an exception if no volunteer is found.
+        return closestVolunteer;
+    }
+}

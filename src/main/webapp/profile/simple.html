@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Profile</title>
+    <link href="/stylesheets/uni-form.css" media="all" rel="stylesheet" />
+    <link href="/stylesheets/default.uni-form.css" media="all" rel="stylesheet" />
+    <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJpckIeO5jh3I51TyNSeDBy8rRE9BGRhk&sensor=false"
+            type="text/javascript"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script type="text/javascript" src="/js/uni-form.jquery.min.js"></script>
+    <script type="text/javascript" src="/js/parsley.min.js"></script>
+    <script type="text/javascript" src="/js/userProfile.js"></script>
+</head>
+<body>
+    <div class="content">
+        <h1>User Profile</h1>
+        <form class="uniForm parsleyForm">
+            <fieldset class="inlineLabels">
+                <div class="ctrlHolder">
+                    <p class="label">I am a ...</p>
+                    <ul class="blockLabels">
+                        <li>
+                            <label for="patientType">
+                                <input type="radio" id="patientType" name="userType" value="patient" checked />
+                                Patient looking for transportation
+                            </label>
+                        </li>
+                        <li>
+                            <label for="volunteerType">
+                                <input type="radio" id="volunteerType" name="userType" value="volunteer" />
+                                Volunteer offering to transport patients
+                            </label>
+                        </li>
+                    </ul>
+                </div>
+                <div class="ctrlHolder">
+                    <label for="name">Full Name</label>
+                    <div class="inputHolder">
+                        <input type="text" id="name" class="textInput" data-required="true" />
+                    </div>
+                </div>
+                <div class="ctrlHolder">
+                    <label for="email">Email Address</label>
+                    <div class="inputHolder">
+                        <input type="text" id="email" class="textInput" data-trigger="change" data-required="true"
+                               data-type="email" />
+                        <p class="formHint">Use an email address you check often</p>
+                    </div>
+                </div>
+                <div class="ctrlHolder">
+                    <label for="location">Location</label>
+                    <div class="inputHolder">
+                        <input type="hidden" id="geocode" value="" />
+                        <textarea id="location" data-trigger="change nokey" data-required="true"
+                                  data-location="true"></textarea>
+                        <div id="map-canvas"></div>
+                    </div>
+                </div>
+                <div class="ctrlHolder">
+                    <label for="comments">Comments</label>
+                    <textarea id="comments"></textarea>
+                    <p class="formHint">Add any notes about accessibility, mobility, etc.</p>
+                </div>
+                <div class="buttonHolder">
+                    <button type="submit" class="primaryAction">Save</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</body>
+</html>

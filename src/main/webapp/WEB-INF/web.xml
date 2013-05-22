@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app
+        version="2.5"
+        xmlns="http://java.sun.com/xml/ns/javaee"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+    <servlet>
+        <servlet-name>test-notification</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.SendNotificationServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>user-profile</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.UserProfileServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>test-notification</servlet-name>
+        <url-pattern>/test-notification</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>user-profile</servlet-name>
+        <url-pattern>/ui/user-profile</url-pattern>
+    </servlet-mapping>
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>any</web-resource-name>
+            <url-pattern>/ui/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>*</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <welcome-file-list>
+        <welcome-file>mashmesh.jsp</welcome-file>
+    </welcome-file-list>
+</web-app>

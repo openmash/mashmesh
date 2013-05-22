@@ -1,0 +1,60 @@
+<html style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+<head></head>
+<body style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; line-height:1; width:600px; margin-top:1em; margin-bottom:1em; margin-left:auto; margin-right:auto" width="600">
+<div style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; font-size:14px; line-height:1.3em; background:#fff; width:600px" width="600">
+    <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <p style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">Hello $volunteerUserProfile.getFullName(),</p>
+        <p style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
+            You have an appointment on <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentDate</strong>
+            at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentTime</strong>
+            at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentAddress</strong>.
+            We hope to see you there!
+        </p>
+    </div>
+    <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
+        <a href="$dynamicMapUrl" style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+            <img src="$staticMapUrl" style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        </a>
+        <div style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; text-align:right; font-size:12px; font-style:italic" align="right">
+            <a href="$dynamicMapUrl" style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+                Click here to view directions in Google Maps
+            </a>
+        </div>
+    </div>
+    <table style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; border-collapse:collapse; border-spacing:0"><tbody style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+    #macro(directionSteps $steps)
+    #foreach($step in $steps)
+    <tr style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; font-size:13px; line-height:1.7em; padding-left:1em">$foreach.count</td>
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; font-size:13px; line-height:1.7em; padding-left:1em">
+            $step.getHtmlInstructions()
+            <span style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; color:#777; padding-left:0.5em; font-size:0.9em">(${step.getDistance()})</span>
+            $step.getHtmlDestination()
+        </td>
+    </tr>
+    #end
+    #end
+    <tr style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">A</td>
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">
+            Leave $volunteerUserProfile.getAddress() at $departureTime
+        </td>
+    </tr>
+
+    #directionSteps($directionLegs.get(0).getSteps())
+
+    <tr style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">B</td>
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">Pick up $patientProfile.getFullName() from $patientProfile.getAddress() at $pickupTime</td>
+    </tr>
+
+    #directionSteps($directionLegs.get(1).getSteps())
+
+    <tr style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">C</td>
+        <td style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; line-height:1.7em; font-size:14px">Arrive at $appointmentAddress at $arrivalTime</td>
+    </tr>
+    </tbody></table>
+</div>
+</body>
+</html>
