@@ -103,11 +103,11 @@ public class PickupNotification {
         return writer.toString();
     }
 
-    private static String formatDate(DateTime dateTime) throws IOException {
+    private static String formatTime(DateTime dateTime) throws IOException {
         return formatDateTime(timeFormatter, dateTime);
     }
 
-    private static String formatTime(DateTime dateTime) throws IOException {
+    private static String formatDate(DateTime dateTime) throws IOException {
         return formatDateTime(dateFormatter, dateTime);
     }
 
