@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.util.Properties;
 
 // TODO: The structure of this class doesn't really make any sense at all...

@@ -18,7 +18,6 @@ package com.sheepdog.mashmesh.servlets;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.users.User;
-import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Preconditions;
 import com.sheepdog.mashmesh.models.OfyService;
@@ -35,72 +34,83 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class UserProfileServlet extends HttpServlet {
-    private static final String PATIENT_TEMPLATE_PATH = "WEB-INF/templates/notifications/profile.vm";
+public class EditUserProfileServlet extends HttpServlet {
+    private static final String CREATE_PROFILE_TEMPLATE_PATH = "WEB-INF/templates/profile/create.vm";
+    private static final String EDIT_PROFILE_TEMPLATE_PATH = "WEB-INF/templates/profile/edit.vm";
 
-    private User getUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        UserService userService = UserServiceFactory.getUserService();
-        User user = userService.getCurrentUser();
-
-        if (user == null) {
-            resp.sendRedirect(userService.createLoginURL(req.getRequestURI()));
-        }
-
-        return user;
+    private User getUser(HttpServletRequest req) throws IOException {
+        return (User) req.getAttribute("user");
     }
 
-    private UserProfile getUserProfile(HttpServletRequest req, User user) throws IOException {
-        UserProfile userProfile = UserProfile.getOrCreate(user);
+    private UserProfile getUserProfile(HttpServletRequest req) throws IOException {
+        return (UserProfile) req.getAttribute("userProfile");
+    }
 
+    private boolean isUncreatedUser(HttpServletRequest req, UserProfile userProfile) {
+        return userProfile.getType() == UserProfile.UserType.NEW &&
+            req.getParameter("userType") == null;
+    }
+
+    private void initializeUserProfile(HttpServletRequest req, UserProfile userProfile) {
         if (userProfile.getType() == UserProfile.UserType.NEW) {
             String userTypeString = req.getParameter("userType");
             Preconditions.checkNotNull(userTypeString);
             UserProfile.UserType userType = UserProfile.UserType.valueOf(userTypeString);
             userProfile.setType(userType);
         }
-
-        return userProfile;
     }
 
-    private void renderTemplate(HttpServletResponse resp, UserProfile userProfile, VolunteerProfile volunteerProfile)
-            throws IOException {
-        String logoutUrl = UserServiceFactory.getUserService().createLogoutURL("/");
+    private String createLogoutUrl() {
+        return UserServiceFactory.getUserService().createLogoutURL("/");
+    }
 
+    private void renderCreateProfileTemplate(HttpServletResponse resp, UserProfile userProfile) throws IOException {
         VelocityContext context = new VelocityContext();
-        context.put("logoutUrl", logoutUrl);
+        context.put("logoutUrl", createLogoutUrl());
+        context.put("userProfile", userProfile);
+
+        resp.setContentType("text/html");
+        Template template = VelocityConfiguration.getInstance().getTemplate(CREATE_PROFILE_TEMPLATE_PATH);
+        template.merge(context, resp.getWriter());
+    }
+
+    private void renderEditProfileTemplate(HttpServletResponse resp, UserProfile userProfile,
+                                           VolunteerProfile volunteerProfile)
+            throws IOException {
+        VelocityContext context = new VelocityContext();
+        context.put("logoutUrl", createLogoutUrl());
         context.put("userProfile", userProfile);
         context.put("volunteerProfile", volunteerProfile);
 
-        Template template = VelocityConfiguration.getInstance().getTemplate(PATIENT_TEMPLATE_PATH);
-        template.merge(context, resp.getWriter());
         resp.setContentType("text/html");
+        Template template = VelocityConfiguration.getInstance().getTemplate(EDIT_PROFILE_TEMPLATE_PATH);
+        template.merge(context, resp.getWriter());
     }
 
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
         throws IOException {
-        User user = getUser(req, resp);
-
-        if (user == null) {
-            return;
-        }
-
-        UserProfile userProfile = getUserProfile(req, user);
+        User user = getUser(req);
+        UserProfile userProfile = getUserProfile(req);
         VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(user);
-        renderTemplate(resp, userProfile, volunteerProfile);
+
+        if (isUncreatedUser(req, userProfile)) {
+            // Render the "create profile" page.
+            renderCreateProfileTemplate(resp, userProfile);
+        } else {
+            initializeUserProfile(req, userProfile);
+            renderEditProfileTemplate(resp, userProfile, volunteerProfile);
+        }
     }
 
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
         throws IOException {
-        User user = getUser(req, resp);
-
-        if (user == null) {
-            return;
-        }
-
-        UserProfile userProfile = getUserProfile(req, user);
+        User user = getUser(req);
+        UserProfile userProfile = getUserProfile(req);
         VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(user);
+
+        initializeUserProfile(req, userProfile);
 
         String fullName = req.getParameter("name");
         String email = req.getParameter("email");
@@ -124,7 +134,7 @@ public class UserProfileServlet extends HttpServlet {
 
         if (!isValid) {
             resp.setStatus(400);
-            renderTemplate(resp, userProfile, volunteerProfile);
+            renderEditProfileTemplate(resp, userProfile, volunteerProfile);
         } else {
             OfyService.ofy().save().entity(userProfile).now();
 

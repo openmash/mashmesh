@@ -76,14 +76,23 @@ public class UserProfile {
         this.comments = comments;
     }
 
-    public static UserProfile getOrCreate(User user) {
+    public static UserProfile get(User user) {
         Key<UserProfile> userProfileKey = Key.create(UserProfile.class, user.getUserId());
-        UserProfile userProfile = OfyService.ofy().load().key(userProfileKey).now();
+        return OfyService.ofy().load().key(userProfileKey).now();
+    }
+
+    public static UserProfile create(User user) {
+        UserProfile userProfile = new UserProfile();
+        userProfile.setUserId(user.getUserId());
+        userProfile.setEmail(user.getEmail());
+        return userProfile;
+    }
+
+    public static UserProfile getOrCreate(User user) {
+        UserProfile userProfile = get(user);
 
         if (userProfile == null) {
-            userProfile = new UserProfile();
-            userProfile.setUserId(user.getUserId());
-            userProfile.setEmail(user.getEmail());
+            userProfile = create(user);
         }
 
         return userProfile;

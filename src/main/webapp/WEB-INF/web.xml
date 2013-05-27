@@ -5,31 +5,44 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
     <servlet>
-        <servlet-name>test-notification</servlet-name>
-        <servlet-class>com.sheepdog.mashmesh.servlets.SendNotificationServlet</servlet-class>
+        <servlet-name>index</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.IndexServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>user-profile</servlet-name>
-        <servlet-class>com.sheepdog.mashmesh.servlets.UserProfileServlet</servlet-class>
+        <servlet-name>editProfile</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.EditUserProfileServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>taskNotification</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.SendNotificationServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>test-notification</servlet-name>
-        <url-pattern>/test-notification</url-pattern>
+        <servlet-name>index</servlet-name>
+        <url-pattern>/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
-        <servlet-name>user-profile</servlet-name>
-        <url-pattern>/ui/user-profile</url-pattern>
+        <servlet-name>editProfile</servlet-name>
+        <url-pattern>/ui/profile/</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>taskNotification</servlet-name>
+        <url-pattern>/tasks/notification/</url-pattern>
+    </servlet-mapping>
+    <filter>
+        <filter-name>requireProfileFilter</filter-name>
+        <filter-class>com.sheepdog.mashmesh.servlets.RequireProfileFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>requireProfileFilter</filter-name>
+        <url-pattern>/ui/*</url-pattern>
+    </filter-mapping>
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>any</web-resource-name>
-            <url-pattern>/ui/*</url-pattern>
+            <url-pattern>/tasks/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>*</role-name>
+            <role-name>admin</role-name>
         </auth-constraint>
     </security-constraint>
-    <welcome-file-list>
-        <welcome-file>mashmesh.jsp</welcome-file>
-    </welcome-file-list>
 </web-app>

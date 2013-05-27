@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create a Profile</title>
+    <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
+</head>
+<body>
+    <div class="content">
+        <div class="top-bar">
+            <h1>Create a Profile</h1>
+            <div class="controls">
+                $userProfile.getEmail() &nbsp; <a href="$logoutUrl">logout</a>
+            </div>
+        </div>
+        <p>
+            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt
+            ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+            ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+        </p>
+        <div class="create-user-container">
+            <a href="/ui/profile/?userType=PATIENT">I am a patient</a>
+            <a href="/ui/profile/?userType=VOLUNTEER">I am a volunteer</a>
+        </div>
+    </div>
+</body>
+</html>
