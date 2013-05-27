@@ -46,6 +46,11 @@ public class GeoUtils {
     }
 
     public static GeoPt geocode(String address) throws GeocodeFailedException, GeocodeNotFoundException {
+        // The underlying geocoder library fails if it receives an empty address.
+        if (address.trim().isEmpty()) {
+            throw new GeocodeFailedException(address, GeocoderStatus.INVALID_REQUEST);
+        }
+
         String cacheKey = "geocode:" + address;
         CacheProxy cache = new CacheProxy();
         Object cacheEntry = cache.get(cacheKey);
@@ -62,11 +67,12 @@ public class GeoUtils {
         Geocoder geocoder = new Geocoder(); // TODO: Use Maps for Business?
         GeocoderRequest request = new GeocoderRequestBuilder().setAddress(address).getGeocoderRequest();
         GeocodeResponse response = geocoder.geocode(request);
+        GeocoderStatus status = response.getStatus();
 
-        if (response.getStatus() == GeocoderStatus.ZERO_RESULTS) {
+        if (status == GeocoderStatus.ZERO_RESULTS) {
             cache.put(cacheKey, INVALID_LOCATION);
             throw new GeocodeNotFoundException(address);
-        } else if (response.getStatus() != GeocoderStatus.OK) {
+        } else if (status != GeocoderStatus.OK) {
             // We've encountered a temporary error, so return without caching the missing point.
             throw new GeocodeFailedException(address, response.getStatus());
         } else {

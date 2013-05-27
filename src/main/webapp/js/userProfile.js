@@ -19,6 +19,7 @@ mashmesh.userProfile.initMap = function(selector) {
         position: center,
         map: map
     });
+    marker.setPosition(null); // Hide the marker by default.
 
     var location = {
         _isValid: null,
@@ -61,20 +62,28 @@ mashmesh.userProfile.initMap = function(selector) {
         location.setValid(false);
     };
 
-    mashmesh.userProfile.markMap = function (location) {
-        var request = {
-            address: location,
-            region: "us"
-        };
+    var setUnknownLocation = function() {
+        location.setValid(null);
+    };
 
+    mashmesh.userProfile.markMap = function (address) {
         mashmesh.userProfile.location.invalidate();
 
-        geocoder.geocode(request, function (results, status) {
-            if (status !== google.maps.GeocoderStatus.OK || results.length == 0) {
-                setInvalidLocation();
-            } else {
-                var geocode = results[0].geometry.location;
-                setValidLocation(geocode);
+        $.ajax({
+            type: "GET",
+            url: "/resources/geocode",
+            data: {address: address},
+            dataType: "json",
+            success: function (data) {
+                var latLng = new google.maps.LatLng(data.latitude, data.longitude);
+                setValidLocation(latLng);
+            },
+            error: function (xhr) {
+                if (xhr.status == 410) {
+                    setInvalidLocation();
+                } else {
+                    setUnknownLocation();
+                }
             }
         });
     };

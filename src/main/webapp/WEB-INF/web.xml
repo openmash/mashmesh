@@ -13,8 +13,22 @@
         <servlet-class>com.sheepdog.mashmesh.servlets.EditUserProfileServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>apiResources</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>com.sheepdog.mashmesh.resources</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
         <servlet-name>taskNotification</servlet-name>
-        <servlet-class>com.sheepdog.mashmesh.servlets.SendNotificationServlet</servlet-class>
+        <servlet-class>com.sheepdog.mashmesh.tasks.SendNotificationServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>index</servlet-name>
@@ -25,9 +39,14 @@
         <url-pattern>/ui/profile/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
+        <servlet-name>apiResources</servlet-name>
+        <url-pattern>/resources/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>taskNotification</servlet-name>
         <url-pattern>/tasks/notification/</url-pattern>
     </servlet-mapping>
+
     <filter>
         <filter-name>requireProfileFilter</filter-name>
         <filter-class>com.sheepdog.mashmesh.servlets.RequireProfileFilter</filter-class>
@@ -36,6 +55,7 @@
         <filter-name>requireProfileFilter</filter-name>
         <url-pattern>/ui/*</url-pattern>
     </filter-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>any</web-resource-name>
