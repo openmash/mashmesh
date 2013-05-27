@@ -13,9 +13,9 @@
             </div>
         </div>
         <p>
-            Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt
-            ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-            ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+            Welcome to VTNCloud! This site connects patients in the VA Health system with volunteers
+            who can help drive them to their medical appointments. Click the link below that
+            describes you to sign up and get involved!
         </p>
         <div class="create-user-container">
             <a href="/ui/profile/?userType=PATIENT">I am a patient</a>

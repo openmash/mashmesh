@@ -20,7 +20,7 @@ import java.util.List;
 public class VolunteerProfile {
     private static final String INDEX_NAME = "volunteer-locations";
     private static final double KILOMETERS_PER_MILE = 1.609344;
-    private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 50;
+    private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 25;
     private static final int ESTIMATED_MILES_PER_HOUR = 40;
 
     @Embed

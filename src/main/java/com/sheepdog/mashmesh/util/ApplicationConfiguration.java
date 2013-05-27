@@ -36,4 +36,8 @@ public class ApplicationConfiguration {
     public static String getNotificationEmailSender() {
         return getApplicationProperties().getProperty("notifications.emailSender");
     }
+
+    public static String getFailureEmailAddress() {
+        return getApplicationProperties().getProperty("notifications.failureEmailAddress");
+    }
 }

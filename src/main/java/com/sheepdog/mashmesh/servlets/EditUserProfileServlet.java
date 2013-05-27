@@ -24,7 +24,7 @@ import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.util.GeoUtils;
-import com.sheepdog.mashmesh.util.VelocityConfiguration;
+import com.sheepdog.mashmesh.util.VelocityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 
@@ -35,8 +35,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class EditUserProfileServlet extends HttpServlet {
-    private static final String CREATE_PROFILE_TEMPLATE_PATH = "WEB-INF/templates/profile/create.vm";
-    private static final String EDIT_PROFILE_TEMPLATE_PATH = "WEB-INF/templates/profile/edit.vm";
+    private static final String CREATE_PROFILE_TEMPLATE_PATH = "profile/create.vm";
+    private static final String EDIT_PROFILE_TEMPLATE_PATH = "profile/edit.vm";
 
     private User getUser(HttpServletRequest req) throws IOException {
         return (User) req.getAttribute("user");
@@ -70,7 +70,7 @@ public class EditUserProfileServlet extends HttpServlet {
         context.put("userProfile", userProfile);
 
         resp.setContentType("text/html");
-        Template template = VelocityConfiguration.getInstance().getTemplate(CREATE_PROFILE_TEMPLATE_PATH);
+        Template template = VelocityUtils.getInstance().getTemplate(CREATE_PROFILE_TEMPLATE_PATH);
         template.merge(context, resp.getWriter());
     }
 
@@ -83,7 +83,7 @@ public class EditUserProfileServlet extends HttpServlet {
         context.put("volunteerProfile", volunteerProfile);
 
         resp.setContentType("text/html");
-        Template template = VelocityConfiguration.getInstance().getTemplate(EDIT_PROFILE_TEMPLATE_PATH);
+        Template template = VelocityUtils.getInstance().getTemplate(EDIT_PROFILE_TEMPLATE_PATH);
         template.merge(context, resp.getWriter());
     }
 

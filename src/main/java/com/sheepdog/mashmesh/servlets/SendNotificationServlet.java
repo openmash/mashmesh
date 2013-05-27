@@ -17,16 +17,14 @@
 package com.sheepdog.mashmesh.servlets;
 
 import com.google.appengine.api.datastore.*;
+import com.google.common.base.Preconditions;
 import com.googlecode.objectify.ObjectifyService;
-import com.sheepdog.mashmesh.EmailNotifier;
+import com.sheepdog.mashmesh.PickupNotification;
 import com.sheepdog.mashmesh.Itinerary;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.util.GeoUtils;
-import com.sheepdog.mashmesh.util.VelocityConfiguration;
-import org.apache.velocity.app.VelocityEngine;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
@@ -53,26 +51,36 @@ public class SendNotificationServlet extends HttpServlet {
         GeoPt appointmentGeoPt = GeoUtils.geocode(appointmentAddress);
 
         UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
+        Preconditions.checkNotNull(patientProfile);
+
         VolunteerProfile volunteerProfile = VolunteerProfile.getEligibleVolunteer(
                 patientProfile.getLocation(), appointmentGeoPt, arrivalDateTime);
-        UserProfile volunteerUserProfile = volunteerProfile.getUserProfile();
-
-        EmailNotifier emailNotifier = new EmailNotifier();
 
         try {
+            resp.setStatus(200);
+            resp.setContentType("text/html");
+
+            if (volunteerProfile == null) {
+                PickupNotification.sendFailureNotification(patientProfile, appointmentAddress, arrivalDateTime);
+                String html = PickupNotification.renderFailureNotification(patientProfile, appointmentAddress,
+                        arrivalDateTime);
+                resp.getWriter().write(html);
+                return;
+            }
+
+            UserProfile volunteerUserProfile = volunteerProfile.getUserProfile();
             Itinerary itinerary = Itinerary.fetch(volunteerUserProfile.getAddress(), appointmentAddress,
                     patientProfile.getAddress(), arrivalDateTime.minusMinutes(5));
+            PickupNotification pickupNotification = new PickupNotification(patientProfile, volunteerUserProfile,
+                    itinerary, appointmentAddress);
 
             // TODO: Handle data races
             volunteerProfile.addAppointmentTime(itinerary.getDepartureTime(), itinerary.getArrivalTime());
             ObjectifyService.ofy().save().entity(volunteerProfile).now();
 
-            String html = emailNotifier.renderNotification(patientProfile, volunteerUserProfile,
-                    itinerary, appointmentAddress);
-            emailNotifier.sendEmail(volunteerUserProfile.getEmail(), html);
+            pickupNotification.send();
 
-            resp.setStatus(200);
-            resp.setContentType("text/html");
+            String html = pickupNotification.renderTemplate(PickupNotification.VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
             resp.getWriter().write(html);
         } catch (URISyntaxException e) {
             e.printStackTrace(); // TODO

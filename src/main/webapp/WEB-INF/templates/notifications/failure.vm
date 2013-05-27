@@ -1,0 +1,20 @@
+<html style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+<head></head>
+<body style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; line-height:1; width:600px; margin-top:1em; margin-bottom:1em; margin-left:auto; margin-right:auto" width="600">
+<div style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; font-size:14px; line-height:1.3em; background:#fff; width:600px" width="600">
+    <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">Hello $patientProfile.getFullName(),</p>
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
+            We're very sorry, but we can't seem to find a volunteer who can
+            drive you to your appointment on <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentDate</strong>
+            at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentTime</strong>
+            at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentAddress</strong>.
+        </p>
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
+            We're going to have a second look to see if anyone is available.
+            Sit tight &mdash; we'll be in touch shortly.
+        </p>
+    </div>
+</div>
+</body>
+</html>

@@ -3,12 +3,26 @@
 <body style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; line-height:1; width:600px; margin-top:1em; margin-bottom:1em; margin-left:auto; margin-right:auto" width="600">
 <div style="margin:0; padding:0; border:0; font:inherit; vertical-align:baseline; font-family:Helvetica, Arial, sans-serif, sans; font-size:14px; line-height:1.3em; background:#fff; width:600px" width="600">
     <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
-        <p style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">Hello $volunteerUserProfile.getFullName(),</p>
-        <p style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
-            You have an appointment on <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentDate</strong>
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">Hello $volunteerUserProfile.getFullName(),</p>
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
+            Thanks for volunteering your time! $patientProfile.getFullName() has
+            an appointment on <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentDate</strong>
             at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentTime</strong>
             at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentAddress</strong>.
-            We hope to see you there!
+        </p>
+
+        #if(!$patientProfile.getComments().isEmpty())
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
+            $patientProfile.getFullName() has provided some comments:
+        </p>
+        <blockquote style="margin: 1em; padding:0.5em 1em; color:#c09853; background:#fcf8e3; border:1px solid #fbeed5; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 2em">
+            $patientProfile.getComments()
+        </blockquote>
+        #end
+
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
+            Here are some directions to help you get $patientProfile.getFullName() to their appointment
+            on time:
         </p>
     </div>
     <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
