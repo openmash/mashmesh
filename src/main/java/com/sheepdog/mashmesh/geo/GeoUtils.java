@@ -1,4 +1,4 @@
-package com.sheepdog.mashmesh.util;
+package com.sheepdog.mashmesh.geo;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.search.GeoPoint;
@@ -8,6 +8,7 @@ import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderStatus;
 import com.google.code.geocoder.model.LatLng;
+import com.sheepdog.mashmesh.util.CacheProxy;
 
 public class GeoUtils {
     private static final Object INVALID_LOCATION = "invalid location";
@@ -44,15 +45,14 @@ public class GeoUtils {
         return distance;
     }
 
-    public static GeoPt geocode(String address) {
+    public static GeoPt geocode(String address) throws GeocodeFailedException, GeocodeNotFoundException {
         String cacheKey = "geocode:" + address;
         CacheProxy cache = new CacheProxy();
         Object cacheEntry = cache.get(cacheKey);
 
         // Backwards comparison -- cacheEntry may be null
         if (INVALID_LOCATION.equals(cacheEntry)) {
-            // TODO: Raise an exception instead.
-            return null;
+            throw new GeocodeNotFoundException(address);
         }
 
         if (cacheEntry != null) {
@@ -62,21 +62,18 @@ public class GeoUtils {
         Geocoder geocoder = new Geocoder(); // TODO: Use Maps for Business?
         GeocoderRequest request = new GeocoderRequestBuilder().setAddress(address).getGeocoderRequest();
         GeocodeResponse response = geocoder.geocode(request);
-        GeoPt geoPt;
 
-        if (response.getStatus() != GeocoderStatus.OK) {
-            geoPt = null;
+        if (response.getStatus() == GeocoderStatus.ZERO_RESULTS) {
+            cache.put(cacheKey, INVALID_LOCATION);
+            throw new GeocodeNotFoundException(address);
+        } else if (response.getStatus() != GeocoderStatus.OK) {
+            // We've encountered a temporary error, so return without caching the missing point.
+            throw new GeocodeFailedException(address, response.getStatus());
         } else {
             LatLng location = response.getResults().get(0).getGeometry().getLocation();
-            geoPt = new GeoPt(location.getLat().floatValue(), location.getLng().floatValue());
-        }
-
-        if (geoPt == null) {
-            cache.put(cacheKey, INVALID_LOCATION);
-        } else {
+            GeoPt geoPt = new GeoPt(location.getLat().floatValue(), location.getLng().floatValue());
             cache.put(cacheKey, geoPt);
+            return geoPt;
         }
-
-        return geoPt; // TODO: Raise an exception instead of returning null.
     }
 }

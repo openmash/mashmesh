@@ -14,16 +14,18 @@
  * limitations under the License.
  */
 
-package com.sheepdog.mashmesh.servlets;
+package com.sheepdog.mashmesh.tasks;
 
 import com.google.appengine.api.datastore.*;
 import com.google.common.base.Preconditions;
 import com.googlecode.objectify.ObjectifyService;
 import com.sheepdog.mashmesh.PickupNotification;
 import com.sheepdog.mashmesh.Itinerary;
+import com.sheepdog.mashmesh.geo.GeocodeFailedException;
+import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
-import com.sheepdog.mashmesh.util.GeoUtils;
+import com.sheepdog.mashmesh.geo.GeoUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -48,7 +50,14 @@ public class SendNotificationServlet extends HttpServlet {
         String arriveAt = req.getParameter("arriveAt");
         DateTime arrivalDateTime = iso8601Parser.parseDateTime(arriveAt);
 
-        GeoPt appointmentGeoPt = GeoUtils.geocode(appointmentAddress);
+        GeoPt appointmentGeoPt = null;
+        try {
+            appointmentGeoPt = GeoUtils.geocode(appointmentAddress);
+        } catch (GeocodeFailedException e) {
+            e.printStackTrace();  // TODO
+        } catch (GeocodeNotFoundException e) {
+            e.printStackTrace();  // TODO
+        }
 
         UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
         Preconditions.checkNotNull(patientProfile);

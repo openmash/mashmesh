@@ -8,7 +8,7 @@ import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Unindex;
-import com.sheepdog.mashmesh.util.GeoUtils;
+import com.sheepdog.mashmesh.geo.GeoUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 

@@ -20,10 +20,12 @@ import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.common.base.Preconditions;
+import com.sheepdog.mashmesh.geo.GeocodeFailedException;
+import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
 import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
-import com.sheepdog.mashmesh.util.GeoUtils;
+import com.sheepdog.mashmesh.geo.GeoUtils;
 import com.sheepdog.mashmesh.util.VelocityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -115,7 +117,15 @@ public class EditUserProfileServlet extends HttpServlet {
         String fullName = req.getParameter("name");
         String email = req.getParameter("email");
         String address = req.getParameter("location"); // TODO: Fix naming conventions
-        GeoPt location = GeoUtils.geocode(address);
+        GeoPt location = null;
+        try {
+            location = GeoUtils.geocode(address);
+        } catch (GeocodeFailedException e) {
+            e.printStackTrace();  // TODO
+        } catch (GeocodeNotFoundException e) {
+            e.printStackTrace();  // TODO
+        }
+
         String comments = req.getParameter("comments");
 
         userProfile.setFullName(fullName);
