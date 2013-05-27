@@ -29,8 +29,8 @@ public class ApplicationConfiguration {
         return applicationProperties;
     }
 
-    public static String getMapsApiKey() {
-        return getApplicationProperties().getProperty("maps.apiKey");
+    public static String getApiKey() {
+        return getApplicationProperties().getProperty("google.apiKey");
     }
 
     public static String getNotificationEmailSender() {
@@ -39,5 +39,17 @@ public class ApplicationConfiguration {
 
     public static String getFailureEmailAddress() {
         return getApplicationProperties().getProperty("notifications.failureEmailAddress");
+    }
+
+    public static String getOAuthApplicationName() {
+        return getApplicationProperties().getProperty("google.oauth.applicationName");
+    }
+
+    public static String getOAuthConsumerKey() {
+        return getApplicationProperties().getProperty("google.oauth.consumerKey");
+    }
+
+    public static String getOAuthConsumerSecret() {
+        return getApplicationProperties().getProperty("google.oauth.consumerSecret");
     }
 }

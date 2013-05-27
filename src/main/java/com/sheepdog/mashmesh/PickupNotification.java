@@ -75,7 +75,7 @@ public class PickupNotification {
         URIBuilder uriBuilder = new URIBuilder(STATIC_MAPS_ENDPOINT_URL);
 
         uriBuilder.addParameter("sensor", "false");
-        uriBuilder.addParameter("key", ApplicationConfiguration.getMapsApiKey());
+        uriBuilder.addParameter("key", ApplicationConfiguration.getApiKey());
         uriBuilder.addParameter("size", "600x400");
         uriBuilder.addParameter("markers", "color:green|label:A|" + getDepartureLatLng());
         uriBuilder.addParameter("markers", "color:blue|label:B|" + getPickupLatLng());
