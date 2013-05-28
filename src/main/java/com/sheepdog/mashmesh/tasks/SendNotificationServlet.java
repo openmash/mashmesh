@@ -47,7 +47,7 @@ public class SendNotificationServlet extends HttpServlet {
         String patientEmail = req.getParameter("patientEmail");
         // TODO: Pull this from a calendar invitation
         String appointmentAddress = req.getParameter("appointmentAddress");
-        String arriveAt = req.getParameter("arriveAt");
+        String arriveAt = req.getParameter("appointmentTime");
         DateTime arrivalDateTime = iso8601Parser.parseDateTime(arriveAt);
 
         GeoPt appointmentGeoPt = null;
