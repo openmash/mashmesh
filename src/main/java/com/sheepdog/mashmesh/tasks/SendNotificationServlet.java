@@ -16,13 +16,14 @@
 
 package com.sheepdog.mashmesh.tasks;
 
+import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.datastore.*;
-import com.google.common.base.Preconditions;
 import com.googlecode.objectify.ObjectifyService;
 import com.sheepdog.mashmesh.PickupNotification;
 import com.sheepdog.mashmesh.Itinerary;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
+import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.geo.GeoUtils;
@@ -60,6 +61,7 @@ public class SendNotificationServlet extends HttpServlet {
         }
 
         UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
+
         Preconditions.checkNotNull(patientProfile);
 
         VolunteerProfile volunteerProfile = VolunteerProfile.getEligibleVolunteer(
@@ -85,7 +87,7 @@ public class SendNotificationServlet extends HttpServlet {
 
             // TODO: Handle data races
             volunteerProfile.addAppointmentTime(itinerary.getDepartureTime(), itinerary.getArrivalTime());
-            ObjectifyService.ofy().save().entity(volunteerProfile).now();
+            OfyService.ofy().put(volunteerProfile);
 
             pickupNotification.send();
 

@@ -1,6 +1,6 @@
 package com.sheepdog.mashmesh;
 
-import com.google.common.base.Preconditions;
+import com.google.api.client.util.Preconditions;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;

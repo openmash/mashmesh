@@ -16,10 +16,10 @@
 
 package com.sheepdog.mashmesh.servlets;
 
+import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.common.base.Preconditions;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
 import com.sheepdog.mashmesh.models.OfyService;
@@ -146,10 +146,10 @@ public class EditUserProfileServlet extends HttpServlet {
             resp.setStatus(400);
             renderEditProfileTemplate(resp, userProfile, volunteerProfile);
         } else {
-            OfyService.ofy().save().entity(userProfile).now();
+            OfyService.ofy().put(userProfile);
 
             if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
-                OfyService.ofy().save().entity(volunteerProfile).now();
+                OfyService.ofy().put(volunteerProfile);
                 volunteerProfile.updateDocument(userProfile);
             }
 

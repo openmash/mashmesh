@@ -11,7 +11,7 @@ public class OfyService {
     }
 
     public static Objectify ofy() {
-        return ObjectifyService.ofy();
+        return ObjectifyService.begin();
     }
 
     public static ObjectifyFactory factory() {

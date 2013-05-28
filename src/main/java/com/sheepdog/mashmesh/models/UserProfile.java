@@ -4,21 +4,22 @@ import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.annotation.Unindex;
+import com.googlecode.objectify.annotation.Indexed;
+import com.googlecode.objectify.annotation.Unindexed;
+
+import javax.persistence.Id;
 
 @Entity
 public class UserProfile {
     public static enum UserType { NEW, VOLUNTEER, PATIENT };
 
     @Id private String userId;
-    @Index private UserType type = UserType.NEW;
-    @Index private String fullName = "";
-    @Index private String email = "";
-    @Unindex private String address = "";
-    @Unindex private GeoPt location = null;
-    @Unindex private String comments = "";
+    @Indexed private UserType type = UserType.NEW;
+    @Indexed private String fullName = "";
+    @Indexed private String email = "";
+    @Unindexed private String address = "";
+    @Unindexed private GeoPt location = null;
+    @Unindexed private String comments = "";
 
     public String getUserId() {
         return userId;
@@ -78,7 +79,7 @@ public class UserProfile {
 
     public static UserProfile get(User user) {
         Key<UserProfile> userProfileKey = Key.create(UserProfile.class, user.getUserId());
-        return OfyService.ofy().load().key(userProfileKey).now();
+        return OfyService.ofy().find(userProfileKey);
     }
 
     public static UserProfile create(User user) {
@@ -99,8 +100,10 @@ public class UserProfile {
     }
 
     public static UserProfile getByEmail(String email) {
-        UserProfile userProfile = OfyService.ofy().load().type(UserProfile.class)
-                .filter("email ==", email).first().now();
+        UserProfile userProfile = OfyService.ofy()
+                .query(UserProfile.class)
+                .filter("email ==", email)
+                .get();
         return userProfile; // TODO: Raise an exception if userProfile is null.
     }
 }

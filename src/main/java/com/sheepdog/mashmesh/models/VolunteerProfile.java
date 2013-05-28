@@ -4,14 +4,14 @@ import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.search.*;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Unindex;
+import com.googlecode.objectify.annotation.Unindexed;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
+import javax.persistence.Embedded;
+import javax.persistence.Id;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -23,17 +23,16 @@ public class VolunteerProfile {
     private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 25;
     private static final int ESTIMATED_MILES_PER_HOUR = 40;
 
-    @Embed
     private static class AppointmentTime {
         private long startTime;
         private long endTime;
     }
 
     @Id private String userId;
-    @Unindex private String documentId;
-    @Unindex private GeoPt location;
-    @Unindex private double maximumDistanceMiles = DEFAULT_MAXIMUM_DISTANCE_MILES;
-    @Unindex private List<AppointmentTime> appointmentTimes = new ArrayList<AppointmentTime>();
+    @Unindexed private String documentId;
+    @Unindexed private GeoPt location;
+    @Unindexed private double maximumDistanceMiles = DEFAULT_MAXIMUM_DISTANCE_MILES;
+    @Embedded private List<AppointmentTime> appointmentTimes = new ArrayList<AppointmentTime>();
 
     private double getAppointmentPaddingSeconds() {
         return ESTIMATED_MILES_PER_HOUR * maximumDistanceMiles * 60 * 60;
@@ -69,7 +68,7 @@ public class VolunteerProfile {
 
     public UserProfile getUserProfile() {
         Key<UserProfile> userProfileKey = Key.create(UserProfile.class, getUserId());
-        return OfyService.ofy().load().key(userProfileKey).now();
+        return OfyService.ofy().find(userProfileKey);
     }
 
     public String getUserId() {
@@ -126,7 +125,7 @@ public class VolunteerProfile {
 
     public static VolunteerProfile getOrCreate(User user) {
         Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, user.getUserId());
-        VolunteerProfile volunteerProfile = OfyService.ofy().load().key(volunteerProfileKey).now();
+        VolunteerProfile volunteerProfile = OfyService.ofy().find(volunteerProfileKey);
 
         if (volunteerProfile == null) {
             volunteerProfile = new VolunteerProfile();
@@ -165,7 +164,7 @@ public class VolunteerProfile {
             volunteerProfileKeys.add(volunteerProfileKey);
         }
 
-        return OfyService.ofy().load().keys(volunteerProfileKeys).values();
+        return OfyService.ofy().get(volunteerProfileKeys).values();
     }
 
     private static Collection<VolunteerProfile> filterAvailableVolunteers(
