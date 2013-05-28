@@ -17,7 +17,7 @@
             $volunteerUserProfile.getFullName() has provided some comments:
         </p>
         <blockquote style="margin: 1em; padding:0.5em 1em; color:#c09853; background:#fcf8e3; border:1px solid #fbeed5; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 2em">
-            $patientProfile.getComments()
+            $volunteerUserProfile.getComments()
         </blockquote>
         #end
     </div>
