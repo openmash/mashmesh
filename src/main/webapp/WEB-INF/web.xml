@@ -28,11 +28,15 @@
             <param-value>com.sheepdog.mashmesh.resources</param-value>
         </init-param>
     </servlet>
-
     <servlet>
         <servlet-name>taskNotification</servlet-name>
         <servlet-class>com.sheepdog.mashmesh.tasks.SendNotificationServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>taskSnapshotToDrive</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.tasks.SnapshotToDriveTask</servlet-class>
+    </servlet>
+
     <servlet-mapping>
         <servlet-name>index</servlet-name>
         <url-pattern>/</url-pattern>
@@ -48,6 +52,10 @@
     <servlet-mapping>
         <servlet-name>taskNotification</servlet-name>
         <url-pattern>/tasks/notification/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>taskSnapshotToDrive</servlet-name>
+        <url-pattern>/tasks/snapshot/</url-pattern>
     </servlet-mapping>
 
     <filter>

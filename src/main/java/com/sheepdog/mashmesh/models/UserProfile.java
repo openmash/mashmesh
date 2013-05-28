@@ -1,6 +1,7 @@
 package com.sheepdog.mashmesh.models;
 
 import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
@@ -8,6 +9,7 @@ import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 
 import javax.persistence.Id;
+import java.util.Collection;
 
 @Entity
 public class UserProfile {
@@ -102,8 +104,12 @@ public class UserProfile {
     public static UserProfile getByEmail(String email) {
         UserProfile userProfile = OfyService.ofy()
                 .query(UserProfile.class)
-                .filter("email ==", email)
+                .filter("email", email)
                 .get();
         return userProfile; // TODO: Raise an exception if userProfile is null.
+    }
+
+    public static QueryResultIterable<UserProfile> listAll() {
+        return OfyService.ofy().query(UserProfile.class).fetch();
     }
 }

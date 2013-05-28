@@ -7,8 +7,7 @@ import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.sheepdog.mashmesh.models.UserProfile;
-import com.sheepdog.mashmesh.util.CalendarUtils;
-import org.joda.time.DateTime;
+import com.sheepdog.mashmesh.util.GoogleApiUtils;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -33,7 +32,7 @@ public class SendEventNotificationResource {
     }
 
     private Event getCalendarEvent(String patientEmail, String calendarId, String eventId) {
-        Calendar calendar = CalendarUtils.getCalendar(patientEmail);
+        Calendar calendar = GoogleApiUtils.getCalendar(patientEmail);
         try {
             return calendar.events().get(calendarId, eventId).execute();
         } catch (GoogleJsonResponseException e) {

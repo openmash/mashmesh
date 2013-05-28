@@ -48,4 +48,8 @@ public class ApplicationConfiguration {
     public static String getOAuthConsumerSecret() {
         return getApplicationProperties().getProperty("google.oauth.consumerSecret");
     }
+
+    public static String getOAuthServiceAccount() {
+        return getApplicationProperties().getProperty("google.oauth.serviceAccount");
+    }
 }
