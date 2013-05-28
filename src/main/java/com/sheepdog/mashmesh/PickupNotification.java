@@ -171,7 +171,6 @@ public class PickupNotification {
                                                DateTime arrivalTime) throws IOException, MessagingException {
         String subject = "No Pickup Available: " + getAppointmentSummary(appointmentAddress, arrivalTime);
         String patientNotification = renderFailureNotification(patientProfile, appointmentAddress, arrivalTime);
-        EmailUtils.sendEmail(patientProfile.getEmail(), subject, patientNotification,
-                ApplicationConfiguration.getFailureEmailAddress());
+        EmailUtils.sendEmail(patientProfile.getEmail(), subject, patientNotification, "admins");
     }
 }

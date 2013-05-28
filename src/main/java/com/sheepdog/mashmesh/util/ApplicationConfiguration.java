@@ -37,10 +37,6 @@ public class ApplicationConfiguration {
         return getApplicationProperties().getProperty("notifications.emailSender");
     }
 
-    public static String getFailureEmailAddress() {
-        return getApplicationProperties().getProperty("notifications.failureEmailAddress");
-    }
-
     public static String getOAuthApplicationName() {
         return getApplicationProperties().getProperty("google.oauth.applicationName");
     }
