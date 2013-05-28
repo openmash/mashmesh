@@ -53,8 +53,9 @@ public class SendEventNotificationResource {
     }
 
     @POST
+    @Path("{patientEmail}")
     @Produces({MediaType.TEXT_PLAIN})
-    public String scheduleNotification(@FormParam("patientEmail") String patientEmail,
+    public String scheduleNotification(@PathParam("patientEmail") String patientEmail,
                                        @FormParam("calendarId") String calendarId,
                                        @FormParam("eventId") String eventId) throws IOException {
         verifyPatientEmail(patientEmail);
