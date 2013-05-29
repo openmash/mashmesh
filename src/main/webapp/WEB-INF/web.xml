@@ -51,7 +51,7 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>accessData</servlet-name>
-        <url-pattern>/view/data/</url-pattern>
+        <url-pattern>/data/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>apiResources</servlet-name>

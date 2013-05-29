@@ -1,0 +1,10 @@
+<div class="top-bar">
+    <h1>$pageTitle</h1>
+    <div class="controls">
+        <span class="username">$userProfile.getEmail()</span>
+        #if($isAdmin)
+        <a href="/data/" target="_blank">stats <i class="icon-bar-chart"></i></a>
+        #end
+        <a href="$logoutUrl">logout <i class="icon-signout"></i></a>
+    </div>
+</div>

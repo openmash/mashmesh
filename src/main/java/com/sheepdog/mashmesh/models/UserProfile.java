@@ -3,13 +3,14 @@ package com.sheepdog.mashmesh.models;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.User;
+import com.google.appengine.api.users.UserServiceFactory;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 
 import javax.persistence.Id;
-import java.util.Collection;
+import javax.persistence.Transient;
 
 @Entity
 public class UserProfile {

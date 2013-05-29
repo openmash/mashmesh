@@ -62,12 +62,17 @@ public class EditUserProfileServlet extends HttpServlet {
         }
     }
 
+    private boolean isAdmin() {
+        return UserServiceFactory.getUserService().isUserAdmin();
+    }
+
     private String createLogoutUrl() {
         return UserServiceFactory.getUserService().createLogoutURL("/");
     }
 
     private void renderCreateProfileTemplate(HttpServletResponse resp, UserProfile userProfile) throws IOException {
         VelocityContext context = new VelocityContext();
+        context.put("isAdmin", isAdmin());
         context.put("logoutUrl", createLogoutUrl());
         context.put("userProfile", userProfile);
 
@@ -80,6 +85,7 @@ public class EditUserProfileServlet extends HttpServlet {
                                            VolunteerProfile volunteerProfile)
             throws IOException {
         VelocityContext context = new VelocityContext();
+        context.put("isAdmin", isAdmin());
         context.put("logoutUrl", createLogoutUrl());
         context.put("userProfile", userProfile);
         context.put("volunteerProfile", volunteerProfile);

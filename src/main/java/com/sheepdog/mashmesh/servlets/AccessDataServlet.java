@@ -14,7 +14,7 @@ public class AccessDataServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         UserService userService = UserServiceFactory.getUserService();
-        User user = (User) req.getAttribute("user");
+        User user = userService.getCurrentUser();
 
         if (!userService.isUserAdmin()) {
             resp.setStatus(403);

@@ -20,6 +20,27 @@ public class RequireProfileFilter implements Filter {
     public void init(FilterConfig filterConfig) throws ServletException {
     }
 
+    private static UserProfile createUserProfile(User user) throws IOException {
+        UserProfile userProfile = UserProfile.create(user);
+
+        try {
+            Userinfo userInfo = GoogleApiUtils.getOauth2(userProfile.getEmail())
+                    .userinfo()
+                    .get()
+                    .execute();
+            userProfile.setFullName(userInfo.getName());
+        } catch (GoogleJsonResponseException e) {
+            int statusCode = e.getDetails().getCode();
+            if (statusCode == 401 || statusCode == 403) {
+                // TODO: Log a warning and continue
+            } else {
+                throw e;
+            }
+        }
+
+        return userProfile;
+    }
+
     private UserProfile getUserProfile(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         UserService userService = UserServiceFactory.getUserService();
         User user = userService.getCurrentUser();
@@ -32,23 +53,9 @@ public class RequireProfileFilter implements Filter {
         UserProfile userProfile = UserProfile.get(user);
 
         if (userProfile == null) {
-            userProfile = UserProfile.create(user);
+            userProfile = createUserProfile(user);
 
-            try {
-                Userinfo userInfo = GoogleApiUtils.getOauth2(userProfile.getEmail())
-                        .userinfo()
-                        .get()
-                        .execute();
-                userProfile.setFullName(userInfo.getName());
-            } catch (GoogleJsonResponseException e) {
-                int statusCode = e.getDetails().getCode();
-                if (statusCode == 401 || statusCode == 403) {
-                    // TODO: Log a warning and continue
-                } else {
-                    throw e;
-                }
-            }
-
+            // Send the user to the profile page to create an account.
             if (!req.getRequestURI().startsWith(PROFILE_PATH)) {
                 resp.sendRedirect(PROFILE_PATH);
                 return null;

@@ -8,6 +8,7 @@
 #end
 <head>
     <title>$pageTitle</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
     <link href="/stylesheets/uni-form.css" media="all" rel="stylesheet" />
     <link href="/stylesheets/default.uni-form.css" media="all" rel="stylesheet" />
     <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
@@ -21,12 +22,8 @@
 </head>
 <body>
     <div class="content">
-        <div class="top-bar">
-            <h1>$pageTitle</h1>
-            <div class="controls">
-                $userProfile.getEmail() &nbsp; <a href="$logoutUrl">logout</a>
-            </div>
-        </div>
+        #parse("profile/topBar.vm")
+
         <form class="uniForm parsleyForm" method="post">
             <input type="hidden" name="userType" value="$userProfile.getType().name()" />
             <fieldset class="inlineLabels">

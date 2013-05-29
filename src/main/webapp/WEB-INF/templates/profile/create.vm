@@ -1,17 +1,15 @@
 <!DOCTYPE html>
 <html>
+#set($pageTitle = "Create a Profile")
 <head>
-    <title>Create a Profile</title>
+    <title>$pageTitle</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
     <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
 </head>
 <body>
     <div class="content">
-        <div class="top-bar">
-            <h1>Create a Profile</h1>
-            <div class="controls">
-                $userProfile.getEmail() &nbsp; <a href="$logoutUrl">logout</a>
-            </div>
-        </div>
+        #parse("profile/topBar.vm")
+
         <p>
             Welcome to VTNCloud! This site connects patients in the VA Health system with volunteers
             who can help drive them to their medical appointments. Click the link below that
