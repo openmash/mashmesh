@@ -34,7 +34,7 @@
     </servlet>
     <servlet>
         <servlet-name>taskSnapshotToDrive</servlet-name>
-        <servlet-class>com.sheepdog.mashmesh.tasks.SnapshotToDriveTask</servlet-class>
+        <servlet-class>com.sheepdog.mashmesh.tasks.UpdateDriveTask</servlet-class>
     </servlet>
 
     <servlet-mapping>

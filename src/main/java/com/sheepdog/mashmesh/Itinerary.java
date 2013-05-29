@@ -172,6 +172,14 @@ public class Itinerary {
         return getStartLeg().getStartLatLng();
     }
 
+    public String getPickupLatLng() {
+        return getStartLeg().getEndLatLng();
+    }
+
+    public DateTime getPickupTime() {
+        return getStartLeg().getArrivalTime();
+    }
+
     public String getEndAddress() {
         return endAddress;
     }

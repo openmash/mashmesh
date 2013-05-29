@@ -79,6 +79,10 @@ public class UserProfile {
         this.comments = comments;
     }
 
+    public Key<UserProfile> getKey() {
+        return Key.create(UserProfile.class, getUserId());
+    }
+
     public static UserProfile get(User user) {
         Key<UserProfile> userProfileKey = Key.create(UserProfile.class, user.getUserId());
         return OfyService.ofy().find(userProfileKey);

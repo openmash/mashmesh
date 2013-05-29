@@ -123,6 +123,10 @@ public class VolunteerProfile {
         // TODO: PutExceptions and transient errors.
     }
 
+    public Key<VolunteerProfile> getKey() {
+        return Key.create(VolunteerProfile.class, getUserId());
+    }
+
     public static VolunteerProfile getOrCreate(User user) {
         Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, user.getUserId());
         VolunteerProfile volunteerProfile = OfyService.ofy().find(volunteerProfileKey);

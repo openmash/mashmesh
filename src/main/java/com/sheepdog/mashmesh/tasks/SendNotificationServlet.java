@@ -24,6 +24,7 @@ import com.sheepdog.mashmesh.Itinerary;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
 import com.sheepdog.mashmesh.models.OfyService;
+import com.sheepdog.mashmesh.models.RideRecord;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.geo.GeoUtils;
@@ -42,14 +43,15 @@ import javax.servlet.http.HttpServletResponse;
 public class SendNotificationServlet extends HttpServlet {
     private static final DateTimeFormatter iso8601Parser = ISODateTimeFormat.dateTimeParser().withOffsetParsed();
 
+    // TODO: Pull apart and refactor this method.
+
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
         throws IOException {
         String patientEmail = req.getParameter("patientEmail");
-        // TODO: Pull this from a calendar invitation
         String appointmentAddress = req.getParameter("appointmentAddress");
-        String arriveAt = req.getParameter("appointmentTime");
-        DateTime arrivalDateTime = iso8601Parser.parseDateTime(arriveAt);
+        String appointmentTimeString = req.getParameter("appointmentTime");
+        DateTime appointmentTime = iso8601Parser.parseDateTime(appointmentTimeString);
 
         GeoPt appointmentGeoPt = null;
         try {
@@ -65,23 +67,23 @@ public class SendNotificationServlet extends HttpServlet {
         Preconditions.checkNotNull(patientProfile);
 
         VolunteerProfile volunteerProfile = VolunteerProfile.getEligibleVolunteer(
-                patientProfile.getLocation(), appointmentGeoPt, arrivalDateTime);
+                patientProfile.getLocation(), appointmentGeoPt, appointmentTime);
 
         try {
             resp.setStatus(200);
             resp.setContentType("text/html");
 
             if (volunteerProfile == null) {
-                PickupNotification.sendFailureNotification(patientProfile, appointmentAddress, arrivalDateTime);
+                PickupNotification.sendFailureNotification(patientProfile, appointmentAddress, appointmentTime);
                 String html = PickupNotification.renderFailureNotification(patientProfile, appointmentAddress,
-                        arrivalDateTime);
+                        appointmentTime);
                 resp.getWriter().write(html);
                 return;
             }
 
             UserProfile volunteerUserProfile = volunteerProfile.getUserProfile();
             Itinerary itinerary = Itinerary.fetch(volunteerUserProfile.getAddress(), appointmentAddress,
-                    patientProfile.getAddress(), arrivalDateTime.minusMinutes(5));
+                    patientProfile.getAddress(), appointmentTime.minusMinutes(5));
             PickupNotification pickupNotification = new PickupNotification(patientProfile, volunteerUserProfile,
                     itinerary, appointmentAddress);
 
@@ -90,6 +92,24 @@ public class SendNotificationServlet extends HttpServlet {
             OfyService.ofy().put(volunteerProfile);
 
             pickupNotification.send();
+
+            RideRecord rideRecord = new RideRecord();
+            rideRecord.setVolunteerUserProfile(volunteerUserProfile.getKey());
+            rideRecord.setVolunteerLocation(volunteerUserProfile.getLocation());
+            rideRecord.setDepartureTime(itinerary.getDepartureTime());
+
+            rideRecord.setPatientProfile(patientProfile.getKey());
+            rideRecord.setPatientLocation(patientProfile.getLocation());
+            rideRecord.setPickupTime(itinerary.getPickupTime());
+
+            rideRecord.setArrivalTime(itinerary.getArrivalTime());
+
+            rideRecord.setAppointmentAddress(appointmentAddress);
+            rideRecord.setAppointmentLocation(appointmentGeoPt);
+            rideRecord.setAppointmentTime(appointmentTime);
+
+            rideRecord.setDistanceMiles(0.0); // TODO
+            OfyService.ofy().put(rideRecord);
 
             String html = pickupNotification.renderTemplate(PickupNotification.VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
             resp.getWriter().write(html);

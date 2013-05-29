@@ -47,39 +47,15 @@ public class PickupNotification {
         this.appointmentAddress = appointmentAddress;
     }
 
-    public String getDepartureLatLng() {
-        return itinerary.getStartLatLng();
-    }
-
-    public DateTime getDepartureTime() {
-        return itinerary.getDepartureTime();
-    }
-
-    public String getPickupLatLng() {
-        return itinerary.getStartLeg().getEndLatLng();
-    }
-
-    public DateTime getPickupTime() {
-        return itinerary.getStartLeg().getArrivalTime();
-    }
-
-    public String getArrivalLatLng() {
-        return itinerary.getEndLatLng();
-    }
-
-    public DateTime getArrivalTime() {
-        return itinerary.getArrivalTime();
-    }
-
     private URI createStaticMapUri(boolean renderOverviewPolyline) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(STATIC_MAPS_ENDPOINT_URL);
 
         uriBuilder.addParameter("sensor", "false");
         uriBuilder.addParameter("key", ApplicationConfiguration.getApiKey());
         uriBuilder.addParameter("size", "600x400");
-        uriBuilder.addParameter("markers", "color:green|label:A|" + getDepartureLatLng());
-        uriBuilder.addParameter("markers", "color:blue|label:B|" + getPickupLatLng());
-        uriBuilder.addParameter("markers", "color:blue|label:C|" + getArrivalLatLng());
+        uriBuilder.addParameter("markers", "color:green|label:A|" + itinerary.getStartLatLng());
+        uriBuilder.addParameter("markers", "color:blue|label:B|" + itinerary.getPickupLatLng());
+        uriBuilder.addParameter("markers", "color:blue|label:C|" + itinerary.getEndLatLng());
         uriBuilder.addParameter("language", "en_US");
         uriBuilder.addParameter("maptype", "roadmap");
 
@@ -97,18 +73,12 @@ public class PickupNotification {
         return uriBuilder.build();
     }
 
-    private static String formatDateTime(DateTimeFormatter formatter, DateTime dateTime) throws IOException {
-        StringWriter writer = new StringWriter();
-        formatter.printTo(writer, dateTime);
-        return writer.toString();
-    }
-
     private static String formatTime(DateTime dateTime) throws IOException {
-        return formatDateTime(timeFormatter, dateTime);
+        return timeFormatter.print(dateTime);
     }
 
     private static String formatDate(DateTime dateTime) throws IOException {
-        return formatDateTime(dateFormatter, dateTime);
+        return dateFormatter.print(dateTime);
     }
 
     private static String getAppointmentSummary(String appointmentAddress, DateTime dateTime) throws IOException {
@@ -135,12 +105,12 @@ public class PickupNotification {
         Context context = new VelocityContext();
         context.put("volunteerUserProfile", volunteerUserProfile);
         context.put("patientProfile", patientProfile);
-        context.put("appointmentDate", formatDate(getArrivalTime()));
-        context.put("appointmentTime", formatTime(getArrivalTime()));
+        context.put("appointmentDate", formatDate(itinerary.getArrivalTime()));
+        context.put("appointmentTime", formatTime(itinerary.getArrivalTime()));
         context.put("appointmentAddress", appointmentAddress);
-        context.put("departureTime", formatTime(getDepartureTime()));
-        context.put("arrivalTime", formatTime(getArrivalTime()));
-        context.put("pickupTime", formatTime(getPickupTime()));
+        context.put("departureTime", formatTime(itinerary.getDepartureTime()));
+        context.put("arrivalTime", formatTime(itinerary.getArrivalTime()));
+        context.put("pickupTime", formatTime(itinerary.getPickupTime()));
         context.put("staticMapUrl", staticMapUri.toString());
         context.put("dynamicMapUrl", dynamicMapUri.toString());
         context.put("directionLegs", itinerary.getLegs());
@@ -149,7 +119,7 @@ public class PickupNotification {
     }
 
     public void send() throws IOException, URISyntaxException, MessagingException {
-        String subject = "Appointment Pickup: " + getAppointmentSummary(appointmentAddress, getArrivalTime());
+        String subject = "Appointment Pickup: " + getAppointmentSummary(appointmentAddress, itinerary.getArrivalTime());
         String volunteerNotification = renderTemplate(VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
         EmailUtils.sendEmail(volunteerUserProfile.getEmail(), subject, volunteerNotification);
 
