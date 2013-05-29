@@ -16,8 +16,8 @@
             describes you to sign up and get involved!
         </p>
         <div class="create-user-container">
-            <a href="/view/profile/?userType=PATIENT">I am a patient</a>
-            <a href="/view/profile/?userType=VOLUNTEER">I am a volunteer</a>
+            <a class="primary-button" href="/view/profile/?userType=PATIENT">I am a patient</a>
+            <a class="primary-button" href="/view/profile/?userType=VOLUNTEER">I am a volunteer</a>
         </div>
     </div>
 </body>

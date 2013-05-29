@@ -67,7 +67,7 @@
                     <p class="formHint">Add any notes about accessibility, mobility, etc.</p>
                 </div>
                 <div class="buttonHolder">
-                    <button type="submit" class="primaryAction">Save</button>
+                    <button type="submit" class="primary-button">Save</button>
                 </div>
             </fieldset>
         </form>
