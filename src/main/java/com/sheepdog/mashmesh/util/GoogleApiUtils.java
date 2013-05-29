@@ -5,23 +5,21 @@ import com.google.api.client.auth.oauth.OAuthParameters;
 import com.google.api.client.extensions.appengine.http.UrlFetchTransport;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.services.CommonGoogleClientRequestInitializer;
+import com.google.api.client.googleapis.services.GoogleClientRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.jackson.JacksonFactory;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.calendar.CalendarRequest;
-import com.google.api.services.calendar.CalendarRequestInitializer;
 import com.google.api.services.drive.Drive;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.FusiontablesScopes;
+import com.google.api.services.oauth2.Oauth2;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
 
 public class GoogleApiUtils {
     private static final HttpTransport HTTP_TRANSPORT = new UrlFetchTransport();
@@ -47,17 +45,23 @@ public class GoogleApiUtils {
 
     public static Calendar getCalendar(final String emailAddress) {
         String apiKey = ApplicationConfiguration.getApiKey();
-        CalendarRequestInitializer calendarRequestInitializer = new CalendarRequestInitializer(apiKey) {
-            @Override
-            public void initializeCalendarRequest(CalendarRequest<?> request) {
-                Map<String, Object> customKeys = Collections.singletonMap("xoauth_requestor_id", (Object)emailAddress);
-                request.setUnknownKeys(customKeys);
-            }
-        };
+        GoogleClientRequestInitializer requestInitializer =
+                new TwoLeggedOAuthRequestInitializer(apiKey, emailAddress);
 
         return new Calendar.Builder(HTTP_TRANSPORT, JSON_FACTORY, getClientOAuthParameters())
                 .setApplicationName(ApplicationConfiguration.getOAuthApplicationName())
-                .setCalendarRequestInitializer(calendarRequestInitializer)
+                .setGoogleClientRequestInitializer(requestInitializer)
+                .build();
+    }
+
+    public static Oauth2 getOauth2(String emailAddress) {
+        String apiKey = ApplicationConfiguration.getApiKey();
+        GoogleClientRequestInitializer requestInitializer =
+                new TwoLeggedOAuthRequestInitializer(apiKey, emailAddress);
+
+        return new Oauth2.Builder(HTTP_TRANSPORT, JSON_FACTORY, getClientOAuthParameters())
+                .setApplicationName(ApplicationConfiguration.getOAuthApplicationName())
+                .setGoogleClientRequestInitializer(requestInitializer)
                 .build();
     }
 

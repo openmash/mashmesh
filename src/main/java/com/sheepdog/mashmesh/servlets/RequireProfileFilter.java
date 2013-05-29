@@ -1,9 +1,12 @@
 package com.sheepdog.mashmesh.servlets;
 
+import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.services.oauth2.model.Userinfo;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.sheepdog.mashmesh.models.UserProfile;
+import com.sheepdog.mashmesh.util.GoogleApiUtils;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +33,21 @@ public class RequireProfileFilter implements Filter {
 
         if (userProfile == null) {
             userProfile = UserProfile.create(user);
+
+            try {
+                Userinfo userInfo = GoogleApiUtils.getOauth2(userProfile.getEmail())
+                        .userinfo()
+                        .get()
+                        .execute();
+                userProfile.setFullName(userInfo.getName());
+            } catch (GoogleJsonResponseException e) {
+                int statusCode = e.getDetails().getCode();
+                if (statusCode == 401 || statusCode == 403) {
+                    // TODO: Log a warning and continue
+                } else {
+                    throw e;
+                }
+            }
 
             if (!req.getRequestURI().startsWith(PROFILE_PATH)) {
                 resp.sendRedirect(PROFILE_PATH);
