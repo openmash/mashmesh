@@ -9,7 +9,6 @@ import com.google.api.services.drive.model.Permission;
 import com.google.api.services.fusiontables.Fusiontables;
 import com.google.api.services.fusiontables.model.Column;
 import com.google.api.services.fusiontables.model.Table;
-import com.google.appengine.repackaged.com.google.common.collect.Iterators;
 import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.RideRecord;
 import com.sheepdog.mashmesh.models.UserProfile;
@@ -166,7 +165,11 @@ public class DriveExporter {
 
     private Collection<RideRecord> getExportableRideRecords() {
         Collection<RideRecord> rideRecords = new ArrayList<RideRecord>();
-        Iterators.addAll(rideRecords, RideRecord.getExportableRecords().iterator());
+
+        for (RideRecord rideRecord : RideRecord.getExportableRecords()) {
+            rideRecords.add(rideRecord);
+        }
+
         return rideRecords;
     }
 
