@@ -8,6 +8,7 @@ public class OfyService {
     static {
         factory().register(UserProfile.class);
         factory().register(VolunteerProfile.class);
+        factory().register(RideRecord.class);
     }
 
     public static Objectify ofy() {
