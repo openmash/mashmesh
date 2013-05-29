@@ -11,6 +11,10 @@ import java.util.Properties;
 public class EmailUtils {
     private static final Session session = Session.getDefaultInstance(new Properties());
 
+    public static String extractDomain(String emailAddress) {
+        return emailAddress.substring(emailAddress.indexOf('@') + 1, emailAddress.length());
+    }
+
     public static void sendEmail(String recipient, String subject, String htmlMessage, String bcc)
             throws MessagingException {
         InternetAddress senderAddress = new InternetAddress(ApplicationConfiguration.getNotificationEmailSender());

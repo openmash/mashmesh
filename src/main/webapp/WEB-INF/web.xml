@@ -13,6 +13,10 @@
         <servlet-class>com.sheepdog.mashmesh.servlets.EditUserProfileServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>accessData</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.AccessDataServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>apiResources</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <init-param>
@@ -43,7 +47,11 @@
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>editProfile</servlet-name>
-        <url-pattern>/ui/profile/</url-pattern>
+        <url-pattern>/view/profile/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>accessData</servlet-name>
+        <url-pattern>/view/data/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>apiResources</servlet-name>
@@ -64,7 +72,7 @@
     </filter>
     <filter-mapping>
         <filter-name>requireProfileFilter</filter-name>
-        <url-pattern>/ui/*</url-pattern>
+        <url-pattern>/view/*</url-pattern>
     </filter-mapping>
 
     <security-constraint>

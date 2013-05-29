@@ -1,5 +1,6 @@
 package com.sheepdog.mashmesh.tasks;
 
+import com.google.appengine.api.users.UserServiceFactory;
 import com.sheepdog.mashmesh.DriveExporter;
 
 import javax.servlet.http.HttpServlet;
@@ -12,11 +13,11 @@ public class UpdateDriveTask extends HttpServlet {
     public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         DriveExporter driveExporter = new DriveExporter();
 
-        driveExporter.deleteAllFiles();
+        driveExporter.deleteAllFiles();    // TODO: TESTING
         driveExporter.snapshotUserTable();
         driveExporter.updateRideTable();
 
         resp.setContentType("text/plain");
-        resp.getWriter().write(driveExporter.getFolder().getAlternateLink());
+        resp.getWriter().write("OK");
     }
 }

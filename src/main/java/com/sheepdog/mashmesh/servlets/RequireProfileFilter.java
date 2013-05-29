@@ -11,7 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class RequireProfileFilter implements Filter {
-    private static final String PROFILE_PATH = "/ui/profile/";
+    private static final String PROFILE_PATH = "/view/profile/";
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {

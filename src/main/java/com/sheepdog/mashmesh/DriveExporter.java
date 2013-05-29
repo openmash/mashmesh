@@ -12,6 +12,7 @@ import com.google.api.services.fusiontables.model.Table;
 import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.RideRecord;
 import com.sheepdog.mashmesh.models.UserProfile;
+import com.sheepdog.mashmesh.util.EmailUtils;
 import com.sheepdog.mashmesh.util.FusionTableContentWriter;
 import com.sheepdog.mashmesh.util.GoogleApiUtils;
 import org.joda.time.DateTime;
@@ -63,16 +64,6 @@ public class DriveExporter {
         }
     }
 
-    private void setPermissions(File file) throws IOException {
-        // Readable by anyone who has the URL
-        Permission readPermission = new Permission();
-        readPermission.setRole("reader");
-        readPermission.setType("anyone");
-        readPermission.setValue("ignored");
-        readPermission.setWithLink(true);
-        drive.permissions().insert(file.getId(), readPermission).execute();
-    }
-
     public File getFolder() throws IOException {
         File folder = findFileByTitle(DRIVE_FOLDER_TITLE);
 
@@ -84,10 +75,25 @@ public class DriveExporter {
                     .setShared(true);
 
             folder = drive.files().insert(folder).execute();
-            setPermissions(folder);
         }
 
         return folder;
+    }
+
+    public String shareFolder(String emailAddress) throws IOException {
+        Permission readPermission = new Permission()
+                .setRole("reader")
+                .setType("user")
+                .setValue(emailAddress);
+
+        drive.permissions().insert(folder.getId(), readPermission)
+                .setSendNotificationEmails(false)
+                .execute();
+
+        String domainName = EmailUtils.extractDomain(emailAddress);
+
+        // Getting the web link seems to return nothing but null, so let's format the URL ourselves.
+        return String.format("https://drive.google.com/a/%s/#folders/%s", domainName, folder.getId());
     }
 
     // TODO: Testing
@@ -127,7 +133,6 @@ public class DriveExporter {
         fusiontables.table().importRows(patientTable.getTableId(), streamContent).execute();
 
         File patientFile = findFileByTitle(patientTable.getName());
-        setPermissions(patientFile);
         addToFolder(patientFile);
     }
 
@@ -156,7 +161,6 @@ public class DriveExporter {
 
             rideTable = fusiontables.table().insert(rideTable).execute();
             rideFile = findFileByTitle(RIDE_TABLE_TITLE);
-            setPermissions(rideFile);
             addToFolder(rideFile);
         }
 
@@ -203,6 +207,7 @@ public class DriveExporter {
     }
 
     public void updateRideTable() throws IOException {
+        // TODO: What happens if there is a failure?
         Table rideTable = getRideTable();
         Collection<RideRecord> rideRecords = getExportableRideRecords();
         exportRideRecords(rideTable, rideRecords);
