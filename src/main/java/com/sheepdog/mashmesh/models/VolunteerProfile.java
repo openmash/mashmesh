@@ -7,6 +7,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.sheepdog.mashmesh.geo.GeoUtils;
+import com.sheepdog.mashmesh.util.ApplicationContants;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -19,7 +20,6 @@ import java.util.List;
 @Entity
 public class VolunteerProfile {
     private static final String INDEX_NAME = "volunteer-locations";
-    private static final double KILOMETERS_PER_MILE = 1.609344;
     private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 25;
     private static final int ESTIMATED_MILES_PER_HOUR = 40;
 
@@ -102,7 +102,7 @@ public class VolunteerProfile {
 
     public Document makeDocument(UserProfile userProfile) {
         GeoPoint location = GeoUtils.convertToGeoPoint(userProfile.getLocation());
-        double maximumDistanceKilometers = maximumDistanceMiles * KILOMETERS_PER_MILE;
+        double maximumDistanceKilometers = maximumDistanceMiles * ApplicationContants.KILOMETERS_PER_MILE;
         Document.Builder documentBuilder = Document.newBuilder()
             .addField(Field.newBuilder().setName("userId").setText(getUserId()))
             .addField(Field.newBuilder().setName("maximumDistance").setNumber(maximumDistanceKilometers))

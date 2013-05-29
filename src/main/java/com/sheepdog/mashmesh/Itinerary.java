@@ -5,6 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.sheepdog.mashmesh.util.ApplicationContants;
 import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 
@@ -53,6 +54,7 @@ public class Itinerary {
         private String startLatLng;
         private DateTime arrivalTime;
         private String endLatLng;
+        private double distanceMeters;
 
         private Leg() {
         }
@@ -75,6 +77,14 @@ public class Itinerary {
 
         public String getEndLatLng() {
             return endLatLng;
+        }
+
+        public double getDistanceMeters() {
+            return distanceMeters;
+        }
+
+        public double getDistanceMiles() {
+            return distanceMeters / 1000 / ApplicationContants.KILOMETERS_PER_MILE;
         }
     }
 
@@ -182,6 +192,16 @@ public class Itinerary {
 
     public String getEndAddress() {
         return endAddress;
+    }
+
+    public double getDistanceMiles() {
+        double distanceMiles = 0.0;
+
+        for (Leg leg : legs) {
+            distanceMiles += leg.getDistanceMiles();
+        }
+
+        return distanceMiles;
     }
 
     public String getEndLatLng() {

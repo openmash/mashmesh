@@ -108,7 +108,8 @@ public class SendNotificationServlet extends HttpServlet {
             rideRecord.setAppointmentLocation(appointmentGeoPt);
             rideRecord.setAppointmentTime(appointmentTime);
 
-            rideRecord.setDistanceMiles(0.0); // TODO
+            rideRecord.setDistanceMiles(itinerary.getDistanceMiles());
+
             OfyService.ofy().put(rideRecord);
 
             String html = pickupNotification.renderTemplate(PickupNotification.VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
