@@ -40,10 +40,6 @@ public class EditUserProfileServlet extends HttpServlet {
     private static final String CREATE_PROFILE_TEMPLATE_PATH = "profile/create.vm";
     private static final String EDIT_PROFILE_TEMPLATE_PATH = "profile/edit.vm";
 
-    private User getUser(HttpServletRequest req) throws IOException {
-        return (User) req.getAttribute("user");
-    }
-
     private UserProfile getUserProfile(HttpServletRequest req) throws IOException {
         return (UserProfile) req.getAttribute("userProfile");
     }
@@ -98,9 +94,8 @@ public class EditUserProfileServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest req, HttpServletResponse resp)
         throws IOException {
-        User user = getUser(req);
         UserProfile userProfile = getUserProfile(req);
-        VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(user);
+        VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(userProfile);
 
         if (isUncreatedUser(req, userProfile)) {
             // Render the "create profile" page.
@@ -114,9 +109,8 @@ public class EditUserProfileServlet extends HttpServlet {
     @Override
     public void doPost(HttpServletRequest req, HttpServletResponse resp)
         throws IOException {
-        User user = getUser(req);
         UserProfile userProfile = getUserProfile(req);
-        VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(user);
+        VolunteerProfile volunteerProfile = VolunteerProfile.getOrCreate(userProfile);
 
         initializeUserProfile(req, userProfile);
 

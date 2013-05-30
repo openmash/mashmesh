@@ -127,13 +127,13 @@ public class VolunteerProfile {
         return Key.create(VolunteerProfile.class, getUserId());
     }
 
-    public static VolunteerProfile getOrCreate(User user) {
-        Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, user.getUserId());
+    public static VolunteerProfile getOrCreate(UserProfile userProfile) {
+        Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, userProfile.getUserId());
         VolunteerProfile volunteerProfile = OfyService.ofy().find(volunteerProfileKey);
 
         if (volunteerProfile == null) {
             volunteerProfile = new VolunteerProfile();
-            volunteerProfile.setUserId(user.getUserId());
+            volunteerProfile.setUserId(userProfile.getUserId());
         }
 
         return volunteerProfile;

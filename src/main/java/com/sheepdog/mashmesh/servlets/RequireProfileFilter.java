@@ -62,6 +62,7 @@ public class RequireProfileFilter implements Filter {
             }
         }
 
+        // TODO: Unused?
         req.setAttribute("user", user);
         req.setAttribute("userProfile", userProfile);
 
