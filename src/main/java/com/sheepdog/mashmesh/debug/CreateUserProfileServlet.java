@@ -1,6 +1,7 @@
 package com.sheepdog.mashmesh.debug;
 
 import com.sheepdog.mashmesh.models.UserProfile;
+import com.sheepdog.mashmesh.servlets.EditUserProfileServlet;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -16,11 +17,16 @@ public class CreateUserProfileServlet extends HttpServlet {
 
         if (userProfile == null) {
             userProfile = new UserProfile();
+            userProfile.setUserId(email);
             userProfile.setEmail(email);
         }
 
         req.setAttribute("userProfile", userProfile);
 
-        getServletContext().getRequestDispatcher("/view/profile/").forward(req, resp);
+        new EditUserProfileServlet().doPost(req, resp);
+
+        resp.setStatus(200);
+        resp.setContentType("text/plain");
+        resp.getWriter().write("OK");
     }
 }
