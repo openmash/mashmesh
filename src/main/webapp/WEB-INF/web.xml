@@ -33,6 +33,14 @@
         </init-param>
     </servlet>
     <servlet>
+        <servlet-name>clearDriveDebug</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.debug.ClearDriveServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>createProfileDebug</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.debug.CreateUserProfileServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>taskNotification</servlet-name>
         <servlet-class>com.sheepdog.mashmesh.tasks.SendNotificationServlet</servlet-class>
     </servlet>
@@ -56,6 +64,14 @@
     <servlet-mapping>
         <servlet-name>apiResources</servlet-name>
         <url-pattern>/resources/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>clearDriveDebug</servlet-name>
+        <url-pattern>/debug/clear-drive/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>createProfileDebug</servlet-name>
+        <url-pattern>/debug/create-profile/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>taskNotification</servlet-name>
