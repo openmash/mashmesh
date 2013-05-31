@@ -130,10 +130,10 @@ public class VolunteerProfile {
 
     public Document makeDocument(UserProfile userProfile) {
         GeoPoint location = GeoUtils.convertToGeoPoint(userProfile.getLocation());
-        double maximumDistanceKilometers = maximumDistanceMiles * ApplicationContants.KILOMETERS_PER_MILE;
+        double maximumDistanceMeters = maximumDistanceMiles * ApplicationContants.KILOMETERS_PER_MILE * 1000;
         Document.Builder documentBuilder = Document.newBuilder()
             .addField(Field.newBuilder().setName("userId").setText(getUserId()))
-            .addField(Field.newBuilder().setName("maximumDistance").setNumber(maximumDistanceKilometers))
+            .addField(Field.newBuilder().setName("maximumDistance").setNumber(maximumDistanceMeters))
             .addField(Field.newBuilder().setName("location").setGeoPoint(location));
 
         if (documentId != null) {
