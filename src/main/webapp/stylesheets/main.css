@@ -70,6 +70,12 @@ h1 {
     margin-left: 110px;
 }
 
+.alert .close {
+    top: -5px;
+    right: -24px;
+    line-height: 20px;
+}
+
 textarea {
     line-height: 1.5;
     resize: none;

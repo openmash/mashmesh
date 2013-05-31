@@ -34,6 +34,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 public class EditUserProfileServlet extends HttpServlet {
     private static final String CREATE_PROFILE_TEMPLATE_PATH = "profile/create.vm";
@@ -76,14 +77,27 @@ public class EditUserProfileServlet extends HttpServlet {
         template.merge(context, resp.getWriter());
     }
 
-    private void renderEditProfileTemplate(HttpServletResponse resp, UserProfile userProfile,
-                                           VolunteerProfile volunteerProfile)
+    private static Object popSessionAttribute(HttpServletRequest req, String attribute) {
+        HttpSession session = req.getSession();
+        Object value = session.getAttribute(attribute);
+
+        if (value != null) {
+            session.removeAttribute(attribute);
+        }
+
+        return value;
+    }
+
+    private void renderEditProfileTemplate(HttpServletRequest req, HttpServletResponse resp,
+                                           UserProfile userProfile, VolunteerProfile volunteerProfile)
             throws IOException {
         VelocityContext context = new VelocityContext();
         context.put("isAdmin", isAdmin());
         context.put("logoutUrl", createLogoutUrl());
         context.put("userProfile", userProfile);
         context.put("volunteerProfile", volunteerProfile);
+        context.put("messageClass", popSessionAttribute(req, "flash.class"));
+        context.put("message", popSessionAttribute(req, "flash.message"));
 
         resp.setContentType("text/html");
         Template template = VelocityUtils.getInstance().getTemplate(EDIT_PROFILE_TEMPLATE_PATH);
@@ -101,7 +115,7 @@ public class EditUserProfileServlet extends HttpServlet {
             renderCreateProfileTemplate(resp, userProfile);
         } else {
             initializeUserProfile(req, userProfile);
-            renderEditProfileTemplate(resp, userProfile, volunteerProfile);
+            renderEditProfileTemplate(req, resp, userProfile, volunteerProfile);
         }
     }
 
@@ -143,7 +157,7 @@ public class EditUserProfileServlet extends HttpServlet {
 
         if (!isValid) {
             resp.setStatus(400);
-            renderEditProfileTemplate(resp, userProfile, volunteerProfile);
+            renderEditProfileTemplate(req, resp, userProfile, volunteerProfile);
         } else {
             OfyService.ofy().put(userProfile);
 
@@ -151,6 +165,10 @@ public class EditUserProfileServlet extends HttpServlet {
                 volunteerProfile.updateDocument(userProfile);
                 OfyService.ofy().put(volunteerProfile);
             }
+
+            HttpSession session = req.getSession();
+            session.setAttribute("flash.class", "success");
+            session.setAttribute("flash.message", "Your profile has been saved");
 
             resp.sendRedirect(req.getRequestURI());
         }
