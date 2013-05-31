@@ -24,7 +24,7 @@ body {
 .top-bar .controls {
     display: inline-block;
     float: right;
-    line-height: 1.9;
+    line-height: 1.8;
 }
 
 .controls .username {
