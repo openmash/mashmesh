@@ -73,6 +73,10 @@ public class SendNotificationServlet extends HttpServlet {
 
         Preconditions.checkNotNull(patientProfile);
 
+        if (patientProfile.getType() != UserProfile.UserType.PATIENT) {
+            return;
+        }
+
         VolunteerProfile volunteerProfile = VolunteerProfile.getEligibleVolunteer(
                 patientProfile.getLocation(), appointmentGeoPt, appointmentTime);
 
