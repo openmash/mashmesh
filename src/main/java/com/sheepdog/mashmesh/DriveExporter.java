@@ -93,7 +93,11 @@ public class DriveExporter {
         String domainName = EmailUtils.extractDomain(emailAddress);
 
         // Getting the web link seems to return nothing but null, so let's format the URL ourselves.
-        return String.format("https://drive.google.com/a/%s/#folders/%s", domainName, folder.getId());
+        if (domainName.equals("gmail.com")) {
+            return String.format("https://drive.google.com/#folders/%s", folder.getId());
+        } else {
+            return String.format("https://drive.google.com/a/%s/#folders/%s", domainName, folder.getId());
+        }
     }
 
     // TODO: Testing
