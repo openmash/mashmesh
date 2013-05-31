@@ -100,6 +100,34 @@ public class VolunteerProfile {
         return SearchServiceFactory.getSearchService().getIndex(indexSpec);
     }
 
+    public static int clearIndex() {
+        Index index = getIndex();
+        int documentCount = 0;
+
+        while (true) {
+            Query query = Query.newBuilder()
+                .setOptions(QueryOptions.newBuilder().setLimit(1000).build())
+                .build("");
+            Collection<ScoredDocument> documents = index.search(query).getResults();
+
+            documentCount += documents.size();
+
+            if (documents.size() == 0) {
+                break;
+            }
+
+            List<String> ids = new ArrayList<String>();
+
+            for (ScoredDocument document : documents) {
+                ids.add(document.getId());
+            }
+
+            index.delete(ids);
+        }
+
+        return documentCount;
+    }
+
     public Document makeDocument(UserProfile userProfile) {
         GeoPoint location = GeoUtils.convertToGeoPoint(userProfile.getLocation());
         double maximumDistanceKilometers = maximumDistanceMiles * ApplicationContants.KILOMETERS_PER_MILE;
