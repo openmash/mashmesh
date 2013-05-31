@@ -18,7 +18,6 @@ package com.sheepdog.mashmesh.servlets;
 
 import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.datastore.GeoPt;
-import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
@@ -149,8 +148,8 @@ public class EditUserProfileServlet extends HttpServlet {
             OfyService.ofy().put(userProfile);
 
             if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
-                OfyService.ofy().put(volunteerProfile);
                 volunteerProfile.updateDocument(userProfile);
+                OfyService.ofy().put(volunteerProfile);
             }
 
             resp.sendRedirect(req.getRequestURI());
