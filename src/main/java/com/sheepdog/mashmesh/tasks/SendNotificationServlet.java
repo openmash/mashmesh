@@ -34,6 +34,8 @@ import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.mail.MessagingException;
 import javax.servlet.http.HttpServlet;
@@ -41,6 +43,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 public class SendNotificationServlet extends HttpServlet {
+    private static Logger logger = Logger.getLogger(SendNotificationServlet.class.getCanonicalName());
+
     private static final DateTimeFormatter iso8601Parser = ISODateTimeFormat.dateTimeParser().withOffsetParsed();
 
     // TODO: Pull apart and refactor this method.
@@ -53,13 +57,16 @@ public class SendNotificationServlet extends HttpServlet {
         String appointmentTimeString = req.getParameter("appointmentTime");
         DateTime appointmentTime = iso8601Parser.parseDateTime(appointmentTimeString);
 
-        GeoPt appointmentGeoPt = null;
+        GeoPt appointmentGeoPt;
+
         try {
             appointmentGeoPt = GeoUtils.geocode(appointmentAddress);
         } catch (GeocodeFailedException e) {
-            e.printStackTrace();  // TODO
+            logger.log(Level.SEVERE, "Failed to fetch geocode for " + appointmentAddress, e);
+            return;
         } catch (GeocodeNotFoundException e) {
-            e.printStackTrace();  // TODO
+            logger.log(Level.WARNING, "Address " + appointmentAddress + " does not exist");
+            return;
         }
 
         UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
