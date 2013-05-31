@@ -5,6 +5,9 @@ mashmesh.userProfile.initForm = function () {
 };
 
 mashmesh.userProfile.initMap = function(selector) {
+    var MAXIMUM_GEOCODING_ATTEMPTS = 4;
+    var INVALID_LOCATION = "INVALID LOCATION";
+
     var center = new google.maps.LatLng(0, 0);
     var mapOptions = {
         zoom: 0,
@@ -19,17 +22,24 @@ mashmesh.userProfile.initMap = function(selector) {
         position: center,
         map: map
     });
+
     marker.setPosition(null); // Hide the marker by default.
 
     var location = {
         _isValid: null,
         _callback: null,
-        geocode: null
+        _geocodingRetryTask: null,
+        _geocodeCache: {}
     };
 
     location.invalidate = function () {
         location._isValid = null;
-        location.geocode = null;
+        location._callback = null;
+
+        if (location._geocodingRetryTask !== null) {
+            clearInterval(location._geocodingRetryTask);
+            location._geocodingRetryTask = null;
+        }
     }
 
     location.setValid = function (isValid) {
@@ -44,7 +54,19 @@ mashmesh.userProfile.initMap = function(selector) {
             location._callback = callback;
         }
         return location._isValid;
-    }
+    };
+
+    location.getCachedGeocode = function (address) {
+        if (location._geocodeCache.hasOwnProperty(address)) {
+            return location._geocodeCache[address];
+        } else {
+            return null;
+        }
+    };
+
+    location.setCachedGeocode = function (address, latlng) {
+        location._geocodeCache[address] = latlng;
+    };
 
     mashmesh.userProfile.location = location;
 
@@ -66,26 +88,51 @@ mashmesh.userProfile.initMap = function(selector) {
         location.setValid(null);
     };
 
-    mashmesh.userProfile.markMap = function (address) {
-        mashmesh.userProfile.location.invalidate();
+    var attemptToMarkMap = function (address, attempts) {
+        location.invalidate();
 
-        $.ajax({
-            type: "GET",
-            url: "/resources/geocode",
-            data: {address: address},
-            dataType: "json",
-            success: function (data) {
-                var latLng = new google.maps.LatLng(data.latitude, data.longitude);
-                setValidLocation(latLng);
-            },
-            error: function (xhr) {
-                if (xhr.status == 410) {
-                    setInvalidLocation();
-                } else {
+        geocoder.geocode({address: address}, function(results, status) {
+            if (status === google.maps.GeocoderStatus.OK) {
+                var latlng = results[0].geometry.location;
+                location.setCachedGeocode(address, latlng);
+                setValidLocation(latlng);
+            } else if (status === google.maps.GeocoderStatus.ZERO_RESULTS) {
+                location.setCachedGeocode(address, INVALID_LOCATION);
+                setInvalidLocation();
+            } else if (status === google.maps.GeocoderStatus.OVER_QUERY_LIMIT
+                       || status === google.maps.GeocoderStatus.REQUEST_DENIED) {
+                attempts++;
+
+                if (attempts >= MAXIMUM_GEOCODING_ATTEMPTS) {
                     setUnknownLocation();
+                } else {
+                    // Back off and try the request again
+                    location._geocodingRetryTask = setTimeout(function() {
+                        attemptToMarkMap(address, attempts);
+                    }, 1000 * attempts);
                 }
+            } else {
+                console.log("Geocoding failed:", status, results);
             }
         });
+    };
+
+    mashmesh.userProfile.markMap = function (address) {
+        // Don't attempt to geocode invalid addresses.
+        if ($.trim(address) === "") {
+            setInvalidLocation();
+            return;
+        }
+
+        var latlng = location.getCachedGeocode(address);
+
+        if (latlng === INVALID_LOCATION) {
+            setInvalidLocation();
+        } else if (latlng !== null) {
+            setValidLocation(latlng);
+        } else {
+            attemptToMarkMap(address, 0);
+        }
     };
 };
 
