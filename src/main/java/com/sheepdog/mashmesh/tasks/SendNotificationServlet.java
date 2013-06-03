@@ -18,9 +18,9 @@ package com.sheepdog.mashmesh.tasks;
 
 import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.datastore.*;
-import com.googlecode.objectify.ObjectifyService;
 import com.sheepdog.mashmesh.PickupNotification;
 import com.sheepdog.mashmesh.Itinerary;
+import com.sheepdog.mashmesh.VolunteerLocator;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
 import com.sheepdog.mashmesh.models.OfyService;
@@ -77,8 +77,9 @@ public class SendNotificationServlet extends HttpServlet {
             return;
         }
 
-        VolunteerProfile volunteerProfile = VolunteerProfile.getEligibleVolunteer(
-                patientProfile.getLocation(), appointmentGeoPt, appointmentTime);
+        GeoPt patientGeoPt = patientProfile.getLocation();
+        VolunteerLocator volunteerLocator = new VolunteerLocator(patientGeoPt, appointmentGeoPt, appointmentTime);
+        VolunteerProfile volunteerProfile = volunteerLocator.getEligibleVolunteer();
 
         try {
             resp.setStatus(200);

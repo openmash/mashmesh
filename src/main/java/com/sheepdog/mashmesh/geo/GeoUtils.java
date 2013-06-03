@@ -8,6 +8,7 @@ import com.google.code.geocoder.model.GeocodeResponse;
 import com.google.code.geocoder.model.GeocoderRequest;
 import com.google.code.geocoder.model.GeocoderStatus;
 import com.google.code.geocoder.model.LatLng;
+import com.sheepdog.mashmesh.util.ApplicationConstants;
 import com.sheepdog.mashmesh.util.CacheProxy;
 
 public class GeoUtils {
@@ -43,6 +44,10 @@ public class GeoUtils {
                 Math.pow(longitudeSine, 2) * aLatitudeProjection * bLatitudeProjection;
         double distance = radius * 2 * Math.atan2(Math.sqrt(alpha), Math.sqrt(1 - alpha));
         return distance;
+    }
+
+    public static double distanceMiles(GeoPt a, GeoPt b) {
+        return distance(a, b) / ApplicationConstants.KILOMETERS_PER_MILE;
     }
 
     public static GeoPt geocode(String address) throws GeocodeFailedException, GeocodeNotFoundException {

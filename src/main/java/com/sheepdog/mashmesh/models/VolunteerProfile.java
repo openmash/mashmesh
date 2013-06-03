@@ -2,40 +2,93 @@ package com.sheepdog.mashmesh.models;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.search.*;
-import com.google.appengine.api.users.User;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.sheepdog.mashmesh.geo.GeoUtils;
-import com.sheepdog.mashmesh.util.ApplicationContants;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
+import com.sheepdog.mashmesh.util.ApplicationConstants;
+import org.joda.time.*;
 
 import javax.persistence.Embedded;
 import javax.persistence.Id;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Entity
 public class VolunteerProfile {
     private static final String INDEX_NAME = "volunteer-locations";
     private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 25;
-    private static final int ESTIMATED_MILES_PER_HOUR = 40;
 
-    private static class AppointmentTime {
-        private long startTime;
-        private long endTime;
+    private static class AppointmentPeriod {
+        private long startTimeMillis;
+        private long endTimeMillis;
+    }
+
+    private static class AvailableTimePeriod {
+        private int day; // Monday = 1, Sunday = 7
+        private LocalTime startTime;
+        private LocalTime endTime;
     }
 
     @Id private String userId;
     @Unindexed private String documentId;
     @Unindexed private GeoPt location;
     @Unindexed private double maximumDistanceMiles = DEFAULT_MAXIMUM_DISTANCE_MILES;
-    @Embedded private List<AppointmentTime> appointmentTimes = new ArrayList<AppointmentTime>();
+    @Embedded private List<AppointmentPeriod> appointmentTimes = new ArrayList<AppointmentPeriod>();
+    @Embedded private List<AvailableTimePeriod> availableTimePeriods = new ArrayList<AvailableTimePeriod>();
 
-    private double getAppointmentPaddingSeconds() {
-        return ESTIMATED_MILES_PER_HOUR * maximumDistanceMiles * 60 * 60;
+    // TODO: Testing
+    public void setAlwaysAvailable() {
+        availableTimePeriods.clear();
+
+        for (int i = DateTimeConstants.MONDAY; i <= DateTimeConstants.SUNDAY; i++) {
+            AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
+            availableTimePeriod.day = i;
+            availableTimePeriod.startTime = new LocalTime(0, 0);
+            availableTimePeriod.endTime = new LocalTime(0, 0);
+            availableTimePeriods.add(availableTimePeriod);
+        }
+    }
+
+    // TODO: Unit tests
+    List<Interval> getAvailableIntervals(DateTime aroundDateTime) {
+        List<Interval> intervals = new ArrayList<Interval>();
+        int dayOfWeek = aroundDateTime.getDayOfWeek();
+
+        for (AvailableTimePeriod availableTimePeriod : availableTimePeriods) {
+            if (availableTimePeriod.day >= dayOfWeek - 1 && availableTimePeriod.day <= dayOfWeek + 1) {
+                LocalDate date = aroundDateTime.toLocalDate();
+                DateTime start = date.toDateTime(availableTimePeriod.startTime, aroundDateTime.getZone());
+                DateTime end = date.toDateTime(availableTimePeriod.endTime, aroundDateTime.getZone());
+
+                if (end.compareTo(start) <= 0) {
+                    end = end.plusDays(1);
+                }
+
+                intervals.add(new Interval(start, end));
+            }
+        }
+
+        Collections.sort(intervals, new Comparator<Interval>() {
+            @Override
+            public int compare(Interval i1, Interval i2) {
+                return new Long(i1.getStartMillis()).compareTo(i2.getStartMillis());
+            }
+        });
+
+        List<Interval> mergedIntervals = new ArrayList<Interval>();
+        Interval lastInterval = null;
+
+        for (Interval interval : intervals) {
+            if (lastInterval != null && lastInterval.abuts(interval)) {
+                mergedIntervals.remove(mergedIntervals.size() - 1);
+                interval = lastInterval.withEnd(interval.getEnd());
+            }
+
+            lastInterval = interval;
+            mergedIntervals.add(interval);
+        }
+
+        return mergedIntervals;
     }
 
     public void addAppointmentTime(DateTime departureTime, DateTime arrivalTime) {
@@ -43,22 +96,36 @@ public class VolunteerProfile {
         DateTime startTime = departureTime;
         DateTime endTime = arrivalTime.plus(commuteDuration);
 
-        AppointmentTime appointmentTime = new AppointmentTime();
-        appointmentTime.startTime = startTime.getMillis();
-        appointmentTime.endTime = endTime.getMillis();
+        AppointmentPeriod appointmentTime = new AppointmentPeriod();
+        appointmentTime.startTimeMillis = startTime.getMillis();
+        appointmentTime.endTimeMillis = endTime.getMillis();
 
         appointmentTimes.add(appointmentTime);
     }
 
-    public boolean isTimeslotOccupied(DateTime dateTime) {
-        long dateTimeMillis = dateTime.getMillis();
-        int appointmentPaddingSeconds = (int) getAppointmentPaddingSeconds();
+    public boolean isTimeslotAvailable(DateTime startDateTime, DateTime endDateTime) {
+        // Assuming that the total interval is less than a day long
+        List<Interval> availableIntervals = getAvailableIntervals(startDateTime);
+        Interval timeslot = new Interval(startDateTime, endDateTime);
 
-        for (AppointmentTime appointmentTime : appointmentTimes) {
-            long startTimeMillis = appointmentTime.startTime - appointmentPaddingSeconds;
-            long endTimeMills = appointmentTime.endTime + appointmentPaddingSeconds;
+        for (Interval availableInterval : availableIntervals) {
+            if (availableInterval.contains(timeslot)) {
+                return true;
+            }
+        }
 
-            if (startTimeMillis < dateTimeMillis && endTimeMills > dateTimeMillis) {
+        return false;
+    }
+
+    public boolean isTimeslotOccupied(DateTime startDateTime, DateTime endDateTime) {
+        long startMillisecond = startDateTime.getMillis();
+        long endMillisecond = endDateTime.getMillis();
+
+        for (AppointmentPeriod appointmentTime : appointmentTimes) {
+            long startTimeMillis = appointmentTime.startTimeMillis;
+            long endTimeMills = appointmentTime.endTimeMillis;
+
+            if (startTimeMillis < startMillisecond && endTimeMills > endMillisecond) {
                 return true;
             }
         }
@@ -130,7 +197,7 @@ public class VolunteerProfile {
 
     public Document makeDocument(UserProfile userProfile) {
         GeoPoint location = GeoUtils.convertToGeoPoint(userProfile.getLocation());
-        double maximumDistanceMeters = maximumDistanceMiles * ApplicationContants.KILOMETERS_PER_MILE * 1000;
+        double maximumDistanceMeters = maximumDistanceMiles * ApplicationConstants.KILOMETERS_PER_MILE * 1000;
         Document.Builder documentBuilder = Document.newBuilder()
             .addField(Field.newBuilder().setName("userId").setText(getUserId()))
             .addField(Field.newBuilder().setName("maximumDistance").setNumber(maximumDistanceMeters))
@@ -167,87 +234,4 @@ public class VolunteerProfile {
         return volunteerProfile;
     }
 
-    // TODO: Break out volunteer query logic
-    private static Query getEligibleVolunteerQuery(GeoPt patientLocation, GeoPt appointmentLocation) {
-        String sortString = String.format("distance(location, %s)", GeoUtils.formatGeoPt(patientLocation));
-        String queryString = String.format("distance(location, %s) < maximumDistance",
-                GeoUtils.formatGeoPt(patientLocation));
-
-        SortOptions sortOptions = SortOptions.newBuilder()
-                .addSortExpression(SortExpression.newBuilder()
-                        .setExpression(sortString)
-                        .setDefaultValueNumeric(20000)
-                        .setDirection(SortExpression.SortDirection.ASCENDING))
-                .build();
-        QueryOptions queryOptions = QueryOptions.newBuilder()
-                .setLimit(1000)
-                .setSortOptions(sortOptions)
-                .build();
-        return Query.newBuilder().setOptions(queryOptions).build("");//queryString);
-    }
-
-    private static Collection<VolunteerProfile> getVolunteerProfilesFromDocuments(
-            Collection<? extends Document> documents) {
-        List<Key<VolunteerProfile>> volunteerProfileKeys = new ArrayList<Key<VolunteerProfile>>();
-
-        for (Document document : documents) {
-            String userId = document.getOnlyField("userId").getText();
-            Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userId);
-            volunteerProfileKeys.add(volunteerProfileKey);
-        }
-
-        return OfyService.ofy().get(volunteerProfileKeys).values();
-    }
-
-    private static Collection<VolunteerProfile> filterAvailableVolunteers(
-            Collection<VolunteerProfile> volunteerProfiles, DateTime appointmentTime) {
-        List<VolunteerProfile> availableVolunteerProfiles = new ArrayList<VolunteerProfile>();
-
-        for (VolunteerProfile volunteerProfile : volunteerProfiles) {
-            if (!volunteerProfile.isTimeslotOccupied(appointmentTime)) {
-                availableVolunteerProfiles.add(volunteerProfile);
-            }
-        }
-
-        return availableVolunteerProfiles;
-    }
-
-    private static Collection<VolunteerProfile> filterWillingVolunteers(
-            Collection<VolunteerProfile> volunteerProfiles, GeoPt patientGeoPt, GeoPt appointmentGeoPt) {
-        List<VolunteerProfile> willingVolunteerProfiles = new ArrayList<VolunteerProfile>();
-        double patientToAppointmentDistance = GeoUtils.distance(patientGeoPt, appointmentGeoPt);
-
-        for (VolunteerProfile volunteerProfile : volunteerProfiles) {
-            double volunteerToPatientDistance = GeoUtils.distance(volunteerProfile.getLocation(), patientGeoPt);
-            double maximumDistanceMiles = volunteerProfile.getMaximumDistanceMiles();
-            if (volunteerToPatientDistance + patientToAppointmentDistance < maximumDistanceMiles) {
-                willingVolunteerProfiles.add(volunteerProfile);
-            }
-        }
-
-        return willingVolunteerProfiles;
-    }
-
-    private static VolunteerProfile getClosestVolunteer(Collection<VolunteerProfile> volunteerProfiles) {
-        // TODO: Improve accuracy with the distance matrix API.
-        if (volunteerProfiles.size() == 0) {
-            return null;
-        } else {
-            return volunteerProfiles.iterator().next();
-        }
-    }
-
-    public static VolunteerProfile getEligibleVolunteer(GeoPt patientLocation, GeoPt appointmentLocation,
-                                                        DateTime appointmentTime) {
-        Query query = getEligibleVolunteerQuery(patientLocation, appointmentLocation);
-        Collection<? extends Document> documents = getIndex().search(query).getResults();
-        Collection<VolunteerProfile> volunteerProfiles = getVolunteerProfilesFromDocuments(documents);
-        Collection<VolunteerProfile> eligibleVolunteerProfiles = filterAvailableVolunteers(
-                volunteerProfiles, appointmentTime);
-        Collection<VolunteerProfile> willingVolunteerProfiles = filterWillingVolunteers(
-                eligibleVolunteerProfiles, patientLocation, appointmentLocation);
-        VolunteerProfile closestVolunteer = getClosestVolunteer(willingVolunteerProfiles);
-        // TODO: Raise an exception if no volunteer is found.
-        return closestVolunteer;
-    }
 }

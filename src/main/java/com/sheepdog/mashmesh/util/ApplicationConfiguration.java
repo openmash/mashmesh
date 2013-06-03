@@ -1,5 +1,8 @@
 package com.sheepdog.mashmesh.util;
 
+import com.google.appengine.api.utils.SystemProperty;
+import com.google.apphosting.api.ApiProxy;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -33,8 +36,13 @@ public class ApplicationConfiguration {
         return getApplicationProperties().getProperty("google.apiKey");
     }
 
+    public static boolean isDevelopment() {
+        return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
+    }
+
     public static String getNotificationEmailSender() {
-        return getApplicationProperties().getProperty("notifications.emailSender");
+        String appId = SystemProperty.applicationId.get();
+        return String.format("notifications@%s.appspotmail.com", appId);
     }
 
     public static String getOAuthApplicationName() {

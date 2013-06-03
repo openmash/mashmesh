@@ -162,6 +162,7 @@ public class EditUserProfileServlet extends HttpServlet {
             OfyService.ofy().put(userProfile);
 
             if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
+                volunteerProfile.setAlwaysAvailable(); // TODO: Testing
                 volunteerProfile.updateDocument(userProfile);
                 OfyService.ofy().put(volunteerProfile);
             }

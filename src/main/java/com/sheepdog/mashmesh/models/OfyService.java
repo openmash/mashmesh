@@ -11,6 +11,7 @@ public class OfyService {
         factory().register(RideRecord.class);
 
         factory().getConversions().add(new OfyJodaInstantConverter());
+        factory().getConversions().add(new OfyJodaLocalTimeConverter());
     }
 
     public static Objectify ofy() {

@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.sheepdog.mashmesh.util.ApplicationContants;
+import com.sheepdog.mashmesh.util.ApplicationConstants;
 import org.apache.http.client.utils.URIBuilder;
 import org.joda.time.DateTime;
 
@@ -84,7 +84,7 @@ public class Itinerary {
         }
 
         public double getDistanceMiles() {
-            return distanceMeters / 1000 / ApplicationContants.KILOMETERS_PER_MILE;
+            return distanceMeters / 1000 / ApplicationConstants.KILOMETERS_PER_MILE;
         }
     }
 
