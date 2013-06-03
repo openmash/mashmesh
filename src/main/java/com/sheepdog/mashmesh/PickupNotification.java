@@ -2,6 +2,9 @@ package com.sheepdog.mashmesh;
 
 
 import com.sheepdog.mashmesh.models.UserProfile;
+import com.sheepdog.mashmesh.polyline.Point;
+import com.sheepdog.mashmesh.polyline.PolylineDecoder;
+import com.sheepdog.mashmesh.polyline.PolylineEncoder;
 import com.sheepdog.mashmesh.util.ApplicationConfiguration;
 import com.sheepdog.mashmesh.util.EmailUtils;
 import com.sheepdog.mashmesh.util.VelocityUtils;
@@ -18,6 +21,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 
 // TODO: The structure of this class doesn't really make any sense at all...
 public class PickupNotification {
@@ -47,7 +51,7 @@ public class PickupNotification {
         this.appointmentAddress = appointmentAddress;
     }
 
-    private URI createStaticMapUri(boolean renderOverviewPolyline) throws URISyntaxException {
+    private URI createStaticMapUri(String overviewPolyline) throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(STATIC_MAPS_ENDPOINT_URL);
 
         uriBuilder.addParameter("sensor", "false");
@@ -59,8 +63,8 @@ public class PickupNotification {
         uriBuilder.addParameter("language", "en_US");
         uriBuilder.addParameter("maptype", "roadmap");
 
-        if (renderOverviewPolyline) {
-            uriBuilder.addParameter("path", "weight:4|color:blue|enc:" + itinerary.getOverviewPolyline());
+        if (!overviewPolyline.isEmpty()) {
+            uriBuilder.addParameter("path", "weight:4|color:blue|enc:" + overviewPolyline);
         }
 
         return uriBuilder.build();
@@ -94,12 +98,22 @@ public class PickupNotification {
     }
 
     public String renderTemplate(String templatePath) throws URISyntaxException, IOException {
-        URI staticMapUri = createStaticMapUri(true);
+        URI staticMapUri = createStaticMapUri(itinerary.getOverviewPolyline());
         URI dynamicMapUri = createDynamicMapUri();
 
+        // If the polyline is too long, we need to reduce it in order for the map to render
         if (staticMapUri.toString().length() > MAXIMUM_URL_LENGTH) {
-            // If the polyline is too long, we need to eliminate it in order for the map to render
-            staticMapUri = createStaticMapUri(false);
+            String overviewPolyline = itinerary.getOverviewPolyline();
+            double minimumPolylineDistance = PolylineEncoder.DEFAULT_MINIMUM_DISTANCE;
+            List<Point> points = new PolylineDecoder(overviewPolyline).getPoints();
+
+            while (staticMapUri.toString().length() > MAXIMUM_URL_LENGTH) {
+                PolylineEncoder polylineEncoder = new PolylineEncoder(minimumPolylineDistance);
+                List<Point> filteredPoints = polylineEncoder.filterPoints(points);
+                String filteredOverviewPolyline = polylineEncoder.encodePoints(filteredPoints);
+                staticMapUri = createStaticMapUri(filteredOverviewPolyline);
+                minimumPolylineDistance *= 2;
+            }
         }
 
         Context context = new VelocityContext();
