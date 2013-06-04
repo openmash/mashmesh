@@ -26,13 +26,6 @@ public class VolunteerProfile {
         @Indexed private long endTimeMillis;
     }
 
-    @Unindexed
-    private static class AvailableTimePeriod {
-        private int day; // Monday = 1, Sunday = 7
-        private LocalTime startTime;
-        private LocalTime endTime;
-    }
-
     @Id private String userId;
     @Unindexed private String documentId;
     @Unindexed private GeoPt location;
@@ -46,24 +39,42 @@ public class VolunteerProfile {
 
         for (int i = DateTimeConstants.MONDAY; i <= DateTimeConstants.SUNDAY; i++) {
             AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
-            availableTimePeriod.day = i;
-            availableTimePeriod.startTime = new LocalTime(0, 0);
-            availableTimePeriod.endTime = new LocalTime(0, 0);
+            availableTimePeriod.setDay(i);
+            availableTimePeriod.setStartTime(new LocalTime(0, 0));
+            availableTimePeriod.setEndTime(new LocalTime(0, 0));
             availableTimePeriods.add(availableTimePeriod);
         }
     }
 
+    public List<AvailableTimePeriod> getAvailableTimePeriods() {
+        return availableTimePeriods;
+    }
+
+    public void setAvailableTimePeriods(List<AvailableTimePeriod> availableTimePeriods) {
+        this.availableTimePeriods = availableTimePeriods;
+    }
+
     // TODO: Unit tests
-    List<Interval> getAvailableIntervals(DateTime aroundDateTime) {
+    private List<Interval> getAvailableIntervals(DateTime aroundDateTime) {
         List<Interval> intervals = new ArrayList<Interval>();
-        int dayOfWeek = aroundDateTime.getDayOfWeek();
+        Map<Integer, DateTime> adjacentDays = new HashMap<Integer, DateTime>(3);
 
+        // Construct a map from days of the week to DateTimes representing adjacent days.
+        for (int i = -1; i <= 1; i++) {
+            DateTime dateTime = aroundDateTime.plusDays(i);
+            int day = dateTime.getDayOfWeek();
+            adjacentDays.put(day, dateTime);
+        }
+
+        // Construct Intervals from time periods in adjacent days.
         for (AvailableTimePeriod availableTimePeriod : availableTimePeriods) {
-            if (availableTimePeriod.day >= dayOfWeek - 1 && availableTimePeriod.day <= dayOfWeek + 1) {
-                LocalDate date = aroundDateTime.toLocalDate();
-                DateTime start = date.toDateTime(availableTimePeriod.startTime, aroundDateTime.getZone());
-                DateTime end = date.toDateTime(availableTimePeriod.endTime, aroundDateTime.getZone());
+            if (adjacentDays.containsKey(availableTimePeriod.getDay())) {
+                LocalDate date = adjacentDays.get(availableTimePeriod.getDay()).toLocalDate();
+                DateTime start = date.toDateTime(availableTimePeriod.getStartTime(), aroundDateTime.getZone());
+                DateTime end = date.toDateTime(availableTimePeriod.getEndTime(), aroundDateTime.getZone());
 
+                // Allow 00:00 - 00:00 to express 00:00 - 24:00 as we can't serialize a
+                //  LocalTime representing 24:00.
                 if (end.compareTo(start) <= 0) {
                     end = end.plusDays(1);
                 }
@@ -72,6 +83,7 @@ public class VolunteerProfile {
             }
         }
 
+        // Sort the Intervals so that adjacent time periods abut. Assumes that intervals don't overlap.
         Collections.sort(intervals, new Comparator<Interval>() {
             @Override
             public int compare(Interval i1, Interval i2) {
@@ -79,6 +91,7 @@ public class VolunteerProfile {
             }
         });
 
+        // Merge abutting intervals together
         List<Interval> mergedIntervals = new ArrayList<Interval>();
         Interval lastInterval = null;
 
