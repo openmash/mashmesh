@@ -37,8 +37,8 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
         availableTimePeriod.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod.setStartTime(new LocalTime(15, 00));
-        availableTimePeriod.setEndTime(new LocalTime(20, 00));
+        availableTimePeriod.setStartTime(new LocalTime(15, 0));
+        availableTimePeriod.setEndTime(new LocalTime(20, 0));
         volunteerProfile.setAvailableTimePeriods(Collections.singletonList(availableTimePeriod));
 
         assertFalse(volunteerProfile.isTimeslotAvailable(saturdayAtNoon, saturdayAtOneThirtyPm));
@@ -50,8 +50,8 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
         availableTimePeriod.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod.setStartTime(new LocalTime(13, 00));
-        availableTimePeriod.setEndTime(new LocalTime(17, 00));
+        availableTimePeriod.setStartTime(new LocalTime(13, 0));
+        availableTimePeriod.setEndTime(new LocalTime(17, 0));
         volunteerProfile.setAvailableTimePeriods(Collections.singletonList(availableTimePeriod));
 
         assertFalse(volunteerProfile.isTimeslotAvailable(saturdayAtNoon, saturdayAtOneThirtyPm));
@@ -63,11 +63,43 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
         availableTimePeriod.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod.setStartTime(new LocalTime(8, 00));
-        availableTimePeriod.setEndTime(new LocalTime(18, 00));
+        availableTimePeriod.setStartTime(new LocalTime(8, 0));
+        availableTimePeriod.setEndTime(new LocalTime(18, 0));
         volunteerProfile.setAvailableTimePeriods(Collections.singletonList(availableTimePeriod));
 
         assertTrue(volunteerProfile.isTimeslotAvailable(saturdayAtNoon, saturdayAtOneThirtyPm));
+    }
+
+    @Test
+    public void testExactAvailability() {
+        VolunteerProfile volunteerProfile = new VolunteerProfile();
+
+        AvailableTimePeriod availableTimePeriod = new AvailableTimePeriod();
+        availableTimePeriod.setDay(DateTimeConstants.SATURDAY);
+        availableTimePeriod.setStartTime(new LocalTime(12, 0));
+        availableTimePeriod.setEndTime(new LocalTime(13, 30));
+        volunteerProfile.setAvailableTimePeriods(Collections.singletonList(availableTimePeriod));
+
+        assertTrue(volunteerProfile.isTimeslotAvailable(saturdayAtNoon, saturdayAtOneThirtyPm));
+    }
+
+    @Test
+    public void testAvailabilityOnAnotherDay() {
+        VolunteerProfile volunteerProfile = new VolunteerProfile();
+
+        AvailableTimePeriod availableTimePeriod1 = new AvailableTimePeriod();
+        availableTimePeriod1.setDay(DateTimeConstants.FRIDAY);
+        availableTimePeriod1.setStartTime(new LocalTime(12, 0));
+        availableTimePeriod1.setEndTime(new LocalTime(13, 30));
+
+        AvailableTimePeriod availableTimePeriod2 = new AvailableTimePeriod();
+        availableTimePeriod2.setDay(DateTimeConstants.SATURDAY);
+        availableTimePeriod2.setStartTime(new LocalTime(12, 30));
+        availableTimePeriod2.setStartTime(new LocalTime(16, 11));
+
+        volunteerProfile.setAvailableTimePeriods(Arrays.asList(availableTimePeriod1, availableTimePeriod2));
+
+        assertFalse(volunteerProfile.isTimeslotAvailable(saturdayAtNoon, saturdayAtOneThirtyPm));
     }
 
     @Test
@@ -76,13 +108,13 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod1 = new AvailableTimePeriod();
         availableTimePeriod1.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod1.setStartTime(new LocalTime(9, 00));
-        availableTimePeriod1.setEndTime(new LocalTime(13, 00));
+        availableTimePeriod1.setStartTime(new LocalTime(9, 0));
+        availableTimePeriod1.setEndTime(new LocalTime(13, 0));
 
         AvailableTimePeriod availableTimePeriod2 = new AvailableTimePeriod();
         availableTimePeriod2.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod2.setStartTime(new LocalTime(13, 00));
-        availableTimePeriod2.setEndTime(new LocalTime(14, 00));
+        availableTimePeriod2.setStartTime(new LocalTime(13, 0));
+        availableTimePeriod2.setEndTime(new LocalTime(14, 0));
 
         volunteerProfile.setAvailableTimePeriods(Arrays.asList(availableTimePeriod1, availableTimePeriod2));
 
@@ -95,13 +127,13 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod1 = new AvailableTimePeriod();
         availableTimePeriod1.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod1.setStartTime(new LocalTime(9, 00));
-        availableTimePeriod1.setEndTime(new LocalTime(10, 00));
+        availableTimePeriod1.setStartTime(new LocalTime(9, 0));
+        availableTimePeriod1.setEndTime(new LocalTime(10, 0));
 
         AvailableTimePeriod availableTimePeriod2 = new AvailableTimePeriod();
         availableTimePeriod2.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod2.setStartTime(new LocalTime(11, 00));
-        availableTimePeriod2.setEndTime(new LocalTime(14, 00));
+        availableTimePeriod2.setStartTime(new LocalTime(11, 0));
+        availableTimePeriod2.setEndTime(new LocalTime(14, 0));
 
         volunteerProfile.setAvailableTimePeriods(Arrays.asList(availableTimePeriod1, availableTimePeriod2));
 
@@ -114,13 +146,13 @@ public class VolunteerProfileAvailabilityTest {
 
         AvailableTimePeriod availableTimePeriod1 = new AvailableTimePeriod();
         availableTimePeriod1.setDay(DateTimeConstants.SATURDAY);
-        availableTimePeriod1.setStartTime(new LocalTime(9, 00));
+        availableTimePeriod1.setStartTime(new LocalTime(9, 0));
         availableTimePeriod1.setEndTime(new LocalTime(12, 20));
 
         AvailableTimePeriod availableTimePeriod2 = new AvailableTimePeriod();
         availableTimePeriod2.setDay(DateTimeConstants.SATURDAY);
         availableTimePeriod2.setStartTime(new LocalTime(12, 30));
-        availableTimePeriod2.setEndTime(new LocalTime(14, 00));
+        availableTimePeriod2.setEndTime(new LocalTime(14, 0));
 
         volunteerProfile.setAvailableTimePeriods(Arrays.asList(availableTimePeriod1, availableTimePeriod2));
 
