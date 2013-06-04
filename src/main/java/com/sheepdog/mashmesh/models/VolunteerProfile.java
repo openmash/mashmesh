@@ -1,9 +1,11 @@
 package com.sheepdog.mashmesh.models;
 
 import com.google.appengine.api.datastore.GeoPt;
+import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.appengine.api.search.*;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import com.sheepdog.mashmesh.util.ApplicationConstants;
@@ -18,11 +20,13 @@ public class VolunteerProfile {
     private static final String INDEX_NAME = "volunteer-locations";
     private static final double DEFAULT_MAXIMUM_DISTANCE_MILES = 25;
 
+    @Unindexed
     private static class AppointmentPeriod {
         private long startTimeMillis;
-        private long endTimeMillis;
+        @Indexed private long endTimeMillis;
     }
 
+    @Unindexed
     private static class AvailableTimePeriod {
         private int day; // Monday = 1, Sunday = 7
         private LocalTime startTime;
@@ -218,12 +222,24 @@ public class VolunteerProfile {
         // TODO: PutExceptions and transient errors.
     }
 
+    public void removeExpiredAppointments(long cutOffTimeMillis) {
+        List<AppointmentPeriod> appointmentPeriodsRemaining = new ArrayList<AppointmentPeriod>();
+
+        for (AppointmentPeriod appointmentPeriod : appointmentTimes) {
+            if (appointmentPeriod.endTimeMillis >= cutOffTimeMillis) {
+                appointmentPeriodsRemaining.add(appointmentPeriod);
+            }
+        }
+
+        appointmentTimes = appointmentPeriodsRemaining;
+    }
+
     public Key<VolunteerProfile> getKey() {
         return Key.create(VolunteerProfile.class, getUserId());
     }
 
     public static VolunteerProfile getOrCreate(UserProfile userProfile) {
-        Key<VolunteerProfile> volunteerProfileKey= Key.create(VolunteerProfile.class, userProfile.getUserId());
+        Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userProfile.getUserId());
         VolunteerProfile volunteerProfile = OfyService.ofy().find(volunteerProfileKey);
 
         if (volunteerProfile == null) {
@@ -234,4 +250,11 @@ public class VolunteerProfile {
         return volunteerProfile;
     }
 
+    public static QueryResultIterator<VolunteerProfile> withExpiredAppointments(long cutOffTimeMillis, int chunkSize) {
+        return OfyService.ofy()
+                .query(VolunteerProfile.class)
+                .filter("appointmentTimes.endTimeMills <", cutOffTimeMillis)
+                .chunkSize(chunkSize)
+                .iterator();
+    }
 }

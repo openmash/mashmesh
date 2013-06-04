@@ -52,6 +52,10 @@
         <servlet-name>taskSnapshotToDrive</servlet-name>
         <servlet-class>com.sheepdog.mashmesh.tasks.UpdateDriveTask</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>taskCleanupSchedules</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.tasks.CleanUpSchedulesTask</servlet-class>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>index</servlet-name>
@@ -88,6 +92,10 @@
     <servlet-mapping>
         <servlet-name>taskSnapshotToDrive</servlet-name>
         <url-pattern>/tasks/snapshot/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>taskCleanupSchedules</servlet-name>
+        <url-pattern>/tasks/cleanup-schedules/</url-pattern>
     </servlet-mapping>
 
     <filter>
