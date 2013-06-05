@@ -12,6 +12,7 @@ body {
 }
 
 .top-bar {
+    position: relative;
     margin: 1.7em 0;
 }
 
@@ -23,8 +24,10 @@ body {
 
 .top-bar .controls {
     display: inline-block;
-    float: right;
-    line-height: 1.8;
+    position: absolute;
+    top: 0;
+    right: 0;
+    line-height: 2;
 }
 
 .controls .username {
