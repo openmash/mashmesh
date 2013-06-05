@@ -5,29 +5,29 @@
     <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">Hello $volunteerUserProfile.getFullName(),</p>
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
-            Thanks for volunteering your time! $patientProfile.getFullName() has
+            Thanks for volunteering your time! A patient named $patientProfile.getFullName() has
             an appointment on <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentDate</strong>
             at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentTime</strong>
             at <strong style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; font-weight:bold">$appointmentAddress</strong>.
         </p>
 
+        <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0 1.5em 0">
+            Will you be able to take them? <a href="$acceptUrl">Accept</a> / <a href="$declineUrl">Decline</a>
+        </p>
+
         #if(!$patientProfile.getComments().isEmpty())
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
-            $patientProfile.getFullName() has provided some comments:
+            $patientProfile.getFullName() has also provided some comments:
         </p>
-        <blockquote style="margin: 1em; padding:0.5em 1em; color:#c09853; background:#fcf8e3; border:1px solid #fbeed5; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 2em">
-            $patientProfile.getComments()
-        </blockquote>
+        <pre style="padding:0.5em 1em; color:#555; background:#EFF0F8; border-left:5px solid #E3E4EC; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 0;">$patientProfile.getComments()</pre>
         #end
-
-        <a href="$acceptUrl">Accept</a> <a href="$declineUrl">Decline</a>
-
+    </div>
+    <div style="margin:1em 0 0 0; padding:0; border:0; border-top:1px solid #ddd; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
             Here are some directions to help you get $patientProfile.getFullName() to their appointment
             on time:
         </p>
-    </div>
-    <div style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; padding-bottom:1em">
+
         <a href="$dynamicMapUrl" style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
             <img src="$staticMapUrl" style="margin:0; padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline">
         </a>

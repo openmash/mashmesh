@@ -148,8 +148,15 @@ ul.parsley-error-list li {
 
 .status-block {
     padding: 0.8em 2em 1em 2em;
+    background-color: #d9edf7;
+    color: #3a87ad;
+    border: 1px solid #bce8f1;
 }
 
 .status-block-actions {
     margin-top: 1em;
+}
+
+.status-block-actions {
+    text-decoration: none;
 }

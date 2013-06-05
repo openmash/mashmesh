@@ -11,7 +11,7 @@
     <div class="content">
         #parse("site/topBar.vm")
 
-        <div class="alert-info status-block">
+        <div class="status-block">
             Thanks for accepting $patientProfile.getFullName()'s pickup request for their appointment on
             <strong>$appointmentDate</strong> at <strong>$appointmentAddress</strong>.
             You will need to pick them up at <strong>$pickupTime</strong> at

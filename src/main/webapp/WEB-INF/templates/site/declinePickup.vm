@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-#set($pageTitle = "Pickup Accepted")
+#set($pageTitle = "Pickup Declined")
 <head>
     <title>$pageTitle</title>
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
@@ -11,13 +11,11 @@
     <div class="content">
         #parse("site/topBar.vm")
 
-        <div class="alert-info status-block">
+        <div class="status-block">
             Thanks for getting back to us. We'll try to find someone else to drive
             $patientProfile.getFullName() to their appointment at $appointmentAddress.
 
             <div class="status-block-actions">
-                <a href="mailto:$patientProfile.getEmail()">Send email to $patientProfile.getFullName()</a>
-                |
                 <a href="/">Return to profile</a>
             </div>
         </div>

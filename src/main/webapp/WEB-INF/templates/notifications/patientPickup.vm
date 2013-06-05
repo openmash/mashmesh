@@ -16,9 +16,7 @@
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
             $volunteerUserProfile.getFullName() has provided some comments:
         </p>
-        <blockquote style="margin: 1em; padding:0.5em 1em; color:#c09853; background:#fcf8e3; border:1px solid #fbeed5; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 2em">
-            $volunteerUserProfile.getComments()
-        </blockquote>
+        <pre style="padding:0.5em 1em; color:#555; background:#EFF0F8; border-left:5px solid #E3E4EC; font:inherit; font-size:0.9em; vertical-align:baseline; margin:1em 0;">$volunteerUserProfile.getComments()</pre>
         #end
     </div>
 </div>
