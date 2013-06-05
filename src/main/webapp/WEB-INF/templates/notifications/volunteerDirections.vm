@@ -20,6 +20,8 @@
         </blockquote>
         #end
 
+        <a href="$acceptUrl">Accept</a> <a href="$declineUrl">Decline</a>
+
         <p style="padding:0; border:0; font-size:100%; font:inherit; vertical-align:baseline; margin:1em 0">
             Here are some directions to help you get $patientProfile.getFullName() to their appointment
             on time:

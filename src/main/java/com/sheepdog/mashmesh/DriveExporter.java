@@ -204,7 +204,7 @@ public class DriveExporter {
 
     private void markRideRecordsUnexportable(Collection<RideRecord> rideRecords) {
         for (RideRecord rideRecord : rideRecords) {
-            rideRecord.setIsExported(true);
+            rideRecord.setExportable(false);
         }
 
         OfyService.ofy().put(rideRecords);

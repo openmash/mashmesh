@@ -1,6 +1,7 @@
 package com.sheepdog.mashmesh;
 
 
+import com.sheepdog.mashmesh.models.RideRequest;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.polyline.Point;
 import com.sheepdog.mashmesh.polyline.PolylineDecoder;
@@ -9,7 +10,6 @@ import com.sheepdog.mashmesh.util.ApplicationConfiguration;
 import com.sheepdog.mashmesh.util.EmailUtils;
 import com.sheepdog.mashmesh.util.VelocityUtils;
 import org.apache.http.client.utils.URIBuilder;
-import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
 import org.joda.time.DateTime;
@@ -18,7 +18,6 @@ import org.joda.time.format.DateTimeFormatter;
 
 import javax.mail.MessagingException;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -38,17 +37,22 @@ public class PickupNotification {
     private static final DateTimeFormatter dateFormatter = DateTimeFormat.fullDate();
     private static final DateTimeFormatter timeFormatter = DateTimeFormat.shortTime();
 
-    private final UserProfile patientProfile;
+    private final RideRequest rideRequest;
     private final UserProfile volunteerUserProfile;
     private final Itinerary itinerary;
-    private final String appointmentAddress;
 
-    public PickupNotification(UserProfile patientProfile, UserProfile volunteerUserProfile,
-                              Itinerary itinerary, String appointmentAddress) {
-        this.patientProfile = patientProfile;
+    public PickupNotification(RideRequest rideRequest, UserProfile volunteerUserProfile, Itinerary itinerary) {
+        this.rideRequest = rideRequest;
         this.volunteerUserProfile = volunteerUserProfile;
         this.itinerary = itinerary;
-        this.appointmentAddress = appointmentAddress;
+    }
+
+    private UserProfile getPatientProfile() {
+        return rideRequest.getPatientProfile();
+    }
+
+    private String getAppointmentAddress() {
+        return rideRequest.getAppointmentAddress();
     }
 
     private URI createStaticMapUri(String overviewPolyline) throws URISyntaxException {
@@ -73,7 +77,7 @@ public class PickupNotification {
     private URI createDynamicMapUri() throws URISyntaxException {
         URIBuilder uriBuilder = new URIBuilder(DYNAMIC_MAPS_URL);
         uriBuilder.addParameter("saddr", volunteerUserProfile.getAddress());
-        uriBuilder.addParameter("daddr", patientProfile.getAddress() + " to:" + appointmentAddress);
+        uriBuilder.addParameter("daddr", getPatientProfile().getAddress() + " to:" + getAppointmentAddress());
         return uriBuilder.build();
     }
 
@@ -90,14 +94,7 @@ public class PickupNotification {
                 appointmentAddress, formatDate(dateTime), formatTime(dateTime));
     }
 
-    private static String renderTemplateToString(String templatePath, Context context) {
-        Template template = VelocityUtils.getInstance().getTemplate(templatePath);
-        StringWriter writer = new StringWriter();
-        template.merge(context, writer);
-        return writer.toString();
-    }
-
-    public String renderTemplate(String templatePath) throws URISyntaxException, IOException {
+    public String renderVolunteerNotification() throws IOException, URISyntaxException {
         URI staticMapUri = createStaticMapUri(itinerary.getOverviewPolyline());
         URI dynamicMapUri = createDynamicMapUri();
 
@@ -116,45 +113,66 @@ public class PickupNotification {
             }
         }
 
+        String baseUrl = ApplicationConfiguration.getBaseUrl() + "/view";
+        String acceptUrl = baseUrl + "/acceptPickup/?rideRequestId=" + rideRequest.getId();
+        String declineUrl = baseUrl + "/declinePickup/?rideRequestId=" + rideRequest.getId();
+
         Context context = new VelocityContext();
         context.put("volunteerUserProfile", volunteerUserProfile);
-        context.put("patientProfile", patientProfile);
+        context.put("patientProfile", getPatientProfile());
         context.put("appointmentDate", formatDate(itinerary.getArrivalTime()));
         context.put("appointmentTime", formatTime(itinerary.getArrivalTime()));
-        context.put("appointmentAddress", appointmentAddress);
+        context.put("appointmentAddress", getAppointmentAddress());
         context.put("departureTime", formatTime(itinerary.getDepartureTime()));
         context.put("arrivalTime", formatTime(itinerary.getArrivalTime()));
         context.put("pickupTime", formatTime(itinerary.getPickupTime()));
+        context.put("rideRequestId", rideRequest.getId());
         context.put("staticMapUrl", staticMapUri.toString());
         context.put("dynamicMapUrl", dynamicMapUri.toString());
         context.put("directionLegs", itinerary.getLegs());
+        context.put("acceptUrl", acceptUrl);
+        context.put("declineUrl", declineUrl);
 
-        return renderTemplateToString(templatePath, context);
+        return VelocityUtils.renderTemplateToString(VOLUNTEER_NOTIFICATION_TEMPLATE_PATH, context);
     }
 
-    public void send() throws IOException, URISyntaxException, MessagingException {
-        String subject = "Appointment Pickup: " + getAppointmentSummary(appointmentAddress, itinerary.getArrivalTime());
-        String volunteerNotification = renderTemplate(VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
+    public void sendVolunteerNotification() throws IOException, URISyntaxException, MessagingException {
+        String summary = getAppointmentSummary(getAppointmentAddress(), itinerary.getArrivalTime());
+        String subject = "Appointment Pickup: " + summary;
+        String volunteerNotification = renderVolunteerNotification();
         EmailUtils.sendEmail(volunteerUserProfile.getEmail(), subject, volunteerNotification);
-
-        String patientNotification = renderTemplate(PATIENT_NOTIFICATION_TEMPLATE_PATH);
-        EmailUtils.sendEmail(patientProfile.getEmail(), subject, patientNotification);
     }
 
-    public static String renderFailureNotification(UserProfile patientProfile, String appointmentAddress,
-                                                   DateTime arrivalTime) throws IOException {
+    public static void sendPatientNotification(RideRequest rideRequest, UserProfile volunteerUserProfile)
+            throws IOException, MessagingException {
         Context context = new VelocityContext();
-        context.put("patientProfile", patientProfile);
-        context.put("appointmentAddress", appointmentAddress);
-        context.put("appointmentDate", formatDate(arrivalTime));
-        context.put("appointmentTime", formatTime(arrivalTime));
-        return renderTemplateToString(FAILURE_NOTIFICATION_TEMPLATE_PATH, context);
+        context.put("patientProfile", rideRequest.getPatientProfile());
+        context.put("appointmentAddress", rideRequest.getAppointmentAddress());
+        context.put("appointmentDate", formatDate(rideRequest.getAppointmentTime()));
+        context.put("appointmentTime", formatTime(rideRequest.getAppointmentTime()));
+        context.put("volunteerUserProfile", volunteerUserProfile);
+        context.put("pickupTime", formatTime(rideRequest.getPendingRideRecord().getPickupTime()));
+
+        String summary = getAppointmentSummary(rideRequest.getAppointmentAddress(), rideRequest.getAppointmentTime());
+        String subject = "Appointment Pickup: " + summary;
+        String templatePath = PATIENT_NOTIFICATION_TEMPLATE_PATH;
+        String volunteerNotification = VelocityUtils.renderTemplateToString(templatePath, context);
+        EmailUtils.sendEmail(rideRequest.getPatientProfile().getEmail(), subject, volunteerNotification);
     }
 
-    public static void sendFailureNotification(UserProfile patientProfile, String appointmentAddress,
-                                               DateTime arrivalTime) throws IOException, MessagingException {
-        String subject = "No Pickup Available: " + getAppointmentSummary(appointmentAddress, arrivalTime);
-        String patientNotification = renderFailureNotification(patientProfile, appointmentAddress, arrivalTime);
-        EmailUtils.sendEmail(patientProfile.getEmail(), subject, patientNotification, "admins");
+    public static String renderFailureNotification(RideRequest rideRequest) throws IOException {
+        Context context = new VelocityContext();
+        context.put("patientProfile", rideRequest.getPatientProfile());
+        context.put("appointmentAddress", rideRequest.getAppointmentAddress());
+        context.put("appointmentDate", formatDate(rideRequest.getAppointmentTime()));
+        context.put("appointmentTime", formatTime(rideRequest.getAppointmentTime()));
+        return VelocityUtils.renderTemplateToString(FAILURE_NOTIFICATION_TEMPLATE_PATH, context);
+    }
+
+    public static void sendFailureNotification(RideRequest rideRequest) throws IOException, MessagingException {
+        String summary = getAppointmentSummary(rideRequest.getAppointmentAddress(), rideRequest.getAppointmentTime());
+        String subject = "No Pickup Available: " + summary;
+        String patientNotification = renderFailureNotification(rideRequest);
+        EmailUtils.sendEmail(rideRequest.getPatientProfile().getEmail(), subject, patientNotification, "admins");
     }
 }

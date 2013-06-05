@@ -17,20 +17,18 @@
 package com.sheepdog.mashmesh.tasks;
 
 import com.google.api.client.util.Preconditions;
-import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.googlecode.objectify.Objectify;
 import com.sheepdog.mashmesh.PickupNotification;
 import com.sheepdog.mashmesh.Itinerary;
 import com.sheepdog.mashmesh.VolunteerLocator;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
-import com.sheepdog.mashmesh.models.OfyService;
-import com.sheepdog.mashmesh.models.RideRecord;
-import com.sheepdog.mashmesh.models.UserProfile;
-import com.sheepdog.mashmesh.models.VolunteerProfile;
+import com.sheepdog.mashmesh.models.*;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -42,43 +40,69 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+
 public class SendNotificationServlet extends HttpServlet {
+    private static final String TASK_URL_PATH = "/tasks/notification/";
+    private static final String QUEUE_NAME = "notifications";
+
     private static Logger logger = Logger.getLogger(SendNotificationServlet.class.getCanonicalName());
 
-    private static final DateTimeFormatter iso8601Parser = ISODateTimeFormat.dateTimeParser().withOffsetParsed();
-
-    // TODO: Pull apart and refactor this method.
-
-    @Override
-    public void doGet(HttpServletRequest req, HttpServletResponse resp)
-        throws IOException {
-        String patientEmail = req.getParameter("patientEmail");
-        String appointmentAddress = req.getParameter("appointmentAddress");
-        String appointmentTimeString = req.getParameter("appointmentTime");
-        DateTime appointmentTime = iso8601Parser.parseDateTime(appointmentTimeString);
-
-        GeoPt appointmentGeoPt;
-
-        try {
-            appointmentGeoPt = GeoUtils.geocode(appointmentAddress);
-        } catch (GeocodeFailedException e) {
-            logger.log(Level.SEVERE, "Failed to fetch geocode for " + appointmentAddress, e);
-            return;
-        } catch (GeocodeNotFoundException e) {
-            logger.log(Level.WARNING, "Address " + appointmentAddress + " does not exist");
-            return;
-        }
-
+    public static RideRequest createRequest(String patientEmail, String appointmentAddress, DateTime appointmentTime) {
         UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
-
         Preconditions.checkNotNull(patientProfile);
 
+        RideRequest rideRequest = new RideRequest();
+
+        rideRequest.setPatientUserProfileKey(patientProfile.getKey());
+        rideRequest.setAppointmentAddress(appointmentAddress);
+        rideRequest.setAppointmentTime(appointmentTime);
+
+        try {
+            rideRequest.setAppointmentLocation(GeoUtils.geocode(appointmentAddress));
+        } catch (GeocodeFailedException e) {
+            logger.log(Level.SEVERE, "Failed to fetch geocode for " + appointmentAddress, e);
+            return null; // TODO: Exception
+        } catch (GeocodeNotFoundException e) {
+            logger.log(Level.WARNING, "Address " + appointmentAddress + " does not exist");
+            return null;
+        }
+
+        OfyService.ofy().put(rideRequest);
+        return rideRequest;
+    }
+
+    public static void scheduleRequest(RideRequest rideRequest) {
+        TaskOptions task = withUrl(TASK_URL_PATH)
+                .method(TaskOptions.Method.POST)
+                .param("rideRequestId", Long.toString(rideRequest.getId()));
+
+        Queue queue = QueueFactory.getQueue(QUEUE_NAME);
+        queue.add(task);
+    }
+
+    @Override
+    public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        doPost(req, resp);
+    }
+
+    @Override
+    public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String rideRequestId = req.getParameter("rideRequestId");
+        Preconditions.checkNotNull(rideRequestId);
+
+        Objectify rideRecordOfy = OfyService.transactionOfy();
+
+        RideRequest rideRequest = rideRecordOfy.get(RideRequest.class, Long.parseLong(rideRequestId));
+        UserProfile patientProfile = rideRequest.getPatientProfile();
+
         if (patientProfile.getType() != UserProfile.UserType.PATIENT) {
+            logger.warning("Non-patient user profile found: " + patientProfile.getUserId());
+            rideRecordOfy.getTxn().rollback();
             return;
         }
 
-        GeoPt patientGeoPt = patientProfile.getLocation();
-        VolunteerLocator volunteerLocator = new VolunteerLocator(patientGeoPt, appointmentGeoPt, appointmentTime);
+        VolunteerLocator volunteerLocator = new VolunteerLocator(rideRequest);
         VolunteerProfile volunteerProfile = volunteerLocator.getEligibleVolunteer();
 
         try {
@@ -86,50 +110,46 @@ public class SendNotificationServlet extends HttpServlet {
             resp.setContentType("text/html");
 
             if (volunteerProfile == null) {
-                PickupNotification.sendFailureNotification(patientProfile, appointmentAddress, appointmentTime);
-                String html = PickupNotification.renderFailureNotification(patientProfile, appointmentAddress,
-                        appointmentTime);
+                PickupNotification.sendFailureNotification(rideRequest);
+                String html = PickupNotification.renderFailureNotification(rideRequest);
                 resp.getWriter().write(html);
                 return;
             }
 
             UserProfile volunteerUserProfile = volunteerProfile.getUserProfile();
-            Itinerary itinerary = Itinerary.fetch(volunteerUserProfile.getAddress(), appointmentAddress,
-                    patientProfile.getAddress(), appointmentTime.minusMinutes(5));
-            PickupNotification pickupNotification = new PickupNotification(patientProfile, volunteerUserProfile,
-                    itinerary, appointmentAddress);
+            Itinerary itinerary = Itinerary.fetch(
+                    volunteerUserProfile.getAddress(),
+                    rideRequest.getAppointmentAddress(),
+                    rideRequest.getPatientAddress(),
+                    rideRequest.getAppointmentTime().minusMinutes(5));
+
+            PickupNotification pickupNotification = new PickupNotification(rideRequest, volunteerUserProfile, itinerary);
+            pickupNotification.sendVolunteerNotification();
 
             // TODO: Handle data races
-            volunteerProfile.addAppointmentTime(itinerary.getDepartureTime(), itinerary.getArrivalTime());
+            // TODO: Include time to go home after the appointment
+            volunteerProfile.addAppointmentTime(rideRequest, itinerary.getDepartureTime(), itinerary.getArrivalTime());
             OfyService.ofy().put(volunteerProfile);
 
-            pickupNotification.send();
-
-            RideRecord rideRecord = new RideRecord();
-            rideRecord.setVolunteerUserProfile(volunteerUserProfile.getKey());
-            rideRecord.setVolunteerLocation(volunteerUserProfile.getLocation());
-            rideRecord.setDepartureTime(itinerary.getDepartureTime());
-
-            rideRecord.setPatientProfile(patientProfile.getKey());
-            rideRecord.setPatientLocation(patientProfile.getLocation());
-            rideRecord.setPickupTime(itinerary.getPickupTime());
-
-            rideRecord.setArrivalTime(itinerary.getArrivalTime());
-
-            rideRecord.setAppointmentAddress(appointmentAddress);
-            rideRecord.setAppointmentLocation(appointmentGeoPt);
-            rideRecord.setAppointmentTime(appointmentTime);
-
-            rideRecord.setDistanceMiles(itinerary.getDistanceMiles());
-
+            RideRecord rideRecord = new RideRecord(rideRequest, volunteerUserProfile, itinerary);
             OfyService.ofy().put(rideRecord);
 
-            String html = pickupNotification.renderTemplate(PickupNotification.VOLUNTEER_NOTIFICATION_TEMPLATE_PATH);
+            rideRequest.setPendingVolunteerProfileKey(volunteerProfile.getKey());
+            rideRequest.setPendingRideRecordKey(rideRecord.getKey());
+            rideRecordOfy.put(rideRequest); // TODO: Handle concurrent modification
+            rideRecordOfy.getTxn().commit();
+
+            String html = pickupNotification.renderVolunteerNotification();
             resp.getWriter().write(html);
         } catch (URISyntaxException e) {
-            e.printStackTrace(); // TODO
+            logger.log(Level.SEVERE, "URI syntax error building map URL: ", e);
         } catch (MessagingException e) {
-            e.printStackTrace(); // TODO
+            // TODO: Add a retry strategy if sending email fails
+            logger.log(Level.SEVERE, "Email sending error: ", e);
+        } finally {
+            if (rideRecordOfy.getTxn().isActive()) {
+                rideRecordOfy.getTxn().rollback();
+            }
         }
     }
 }

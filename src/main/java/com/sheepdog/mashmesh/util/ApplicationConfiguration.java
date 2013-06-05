@@ -36,13 +36,25 @@ public class ApplicationConfiguration {
         return getApplicationProperties().getProperty("google.apiKey");
     }
 
+    public static String getAppId() {
+        return SystemProperty.applicationId.get();
+    }
+
     public static boolean isDevelopment() {
         return SystemProperty.environment.value() == SystemProperty.Environment.Value.Development;
     }
 
+    public static String getBaseUrl() {
+        if (isDevelopment()) {
+            // TODO: Make maven use this base URL!
+            return getApplicationProperties().getProperty("web.development.baseUrl");
+        } else {
+            return String.format("http://%s.appspot.com", getAppId());
+        }
+    }
+
     public static String getNotificationEmailSender() {
-        String appId = SystemProperty.applicationId.get();
-        return String.format("notifications@%s.appspotmail.com", appId);
+        return String.format("notifications@%s.appspotmail.com", getAppId());
     }
 
     public static String getOAuthApplicationName() {

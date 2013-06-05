@@ -7,21 +7,22 @@ import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Indexed;
 import com.googlecode.objectify.annotation.Unindexed;
 import com.googlecode.objectify.condition.IfFalse;
+import com.googlecode.objectify.condition.IfTrue;
+import com.sheepdog.mashmesh.Itinerary;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 import javax.persistence.Id;
-import java.util.Collection;
 
 @Entity
 public class RideRecord {
     @Id private Long id;
 
-    @Indexed private Key<UserProfile> volunteerUserProfile;
+    @Indexed private Key<UserProfile> volunteerUserProfileKey;
     @Unindexed private GeoPt volunteerLocation;
     @Unindexed private DateTime departureTime;
 
-    @Indexed private Key<UserProfile> patientProfile;
+    @Indexed private Key<UserProfile> patientProfileKey;
     @Unindexed private GeoPt patientLocation;
     @Unindexed private DateTime pickupTime;
 
@@ -32,18 +33,43 @@ public class RideRecord {
     @Indexed private DateTime appointmentTime;
 
     @Unindexed private double distanceMiles;
-    @Indexed(IfFalse.class) private boolean isExported = false;
+    @Indexed(IfTrue.class) private boolean isExportable = false;
+
+    public RideRecord() {
+    }
+
+    public RideRecord(RideRequest rideRequest, UserProfile volunteerUserProfile, Itinerary itinerary) {
+        this.volunteerUserProfileKey = volunteerUserProfile.getKey();
+        this.volunteerLocation = volunteerUserProfile.getLocation();
+        this.departureTime = itinerary.getDepartureTime();
+
+        this.patientProfileKey = rideRequest.getPatientUserProfileKey();
+        this.patientLocation = rideRequest.getPatientLocation();
+        this.pickupTime = itinerary.getPickupTime();
+
+        this.arrivalTime = itinerary.getArrivalTime();
+
+        this.appointmentAddress = rideRequest.getAppointmentAddress();
+        this.appointmentLocation = rideRequest.getAppointmentLocation();
+        this.appointmentTime = rideRequest.getAppointmentTime();
+
+        this.distanceMiles = itinerary.getDistanceMiles();
+    }
 
     public Long getId() {
         return id;
     }
 
-    public Key<UserProfile> getVolunteerUserProfile() {
-        return volunteerUserProfile;
+    public Key<RideRecord> getKey() {
+        return new Key<RideRecord>(RideRecord.class, id);
     }
 
-    public void setVolunteerUserProfile(Key<UserProfile> volunteerUserProfile) {
-        this.volunteerUserProfile = volunteerUserProfile;
+    public Key<UserProfile> getVolunteerUserProfileKey() {
+        return volunteerUserProfileKey;
+    }
+
+    public void setVolunteerUserProfileKey(Key<UserProfile> volunteerUserProfileKey) {
+        this.volunteerUserProfileKey = volunteerUserProfileKey;
     }
 
     public GeoPt getVolunteerLocation() {
@@ -62,12 +88,12 @@ public class RideRecord {
         this.departureTime = departureTime;
     }
 
-    public Key<UserProfile> getPatientProfile() {
-        return patientProfile;
+    public Key<UserProfile> getPatientProfileKey() {
+        return patientProfileKey;
     }
 
-    public void setPatientProfile(Key<UserProfile> patientProfile) {
-        this.patientProfile = patientProfile;
+    public void setPatientProfileKey(Key<UserProfile> patientProfileKey) {
+        this.patientProfileKey = patientProfileKey;
     }
 
     public GeoPt getPatientLocation() {
@@ -130,17 +156,17 @@ public class RideRecord {
         return new Duration(departureTime, arrivalTime).getStandardMinutes();
     }
 
-    public boolean isExported() {
-        return isExported;
+    public boolean isExportable() {
+        return isExportable;
     }
 
-    public void setIsExported(boolean isExported) {
-        this.isExported = isExported;
+    public void setExportable(boolean isExportable) {
+        this.isExportable = isExportable;
     }
 
     public static QueryResultIterable<RideRecord> getExportableRecords() {
         return OfyService.ofy().query(RideRecord.class)
-                .filter("isExported", false)
+                .filter("isExportable", true)
                 .fetch();
     }
 }

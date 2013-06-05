@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+#set($pageTitle = "Pickup Accepted")
+<head>
+    <title>$pageTitle</title>
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.1.1/css/font-awesome.css" rel="stylesheet">
+    <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
+    <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
+</head>
+<body>
+    <div class="content">
+        #parse("site/topBar.vm")
+
+        <div class="alert-info status-block">
+            Thanks for accepting $patientProfile.getFullName()'s pickup request for their appointment on
+            <strong>$appointmentDate</strong> at <strong>$appointmentAddress</strong>.
+            You will need to pick them up at <strong>$pickupTime</strong> at
+            <strong>$patientProfile.getAddress()</strong>
+            in order to get to their appointment by $appointmentTime.
+            Please review the pickup request email for details.
+
+            <div class="status-block-actions">
+                <a href="mailto:$patientProfile.getEmail()">Send email to $patientProfile.getFullName()</a>
+                |
+                <a href="/">Return to profile</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

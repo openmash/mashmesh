@@ -37,8 +37,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 public class EditUserProfileServlet extends HttpServlet {
-    private static final String CREATE_PROFILE_TEMPLATE_PATH = "profile/create.vm";
-    private static final String EDIT_PROFILE_TEMPLATE_PATH = "profile/edit.vm";
+    private static final String CREATE_PROFILE_TEMPLATE_PATH = "site/create.vm";
+    private static final String EDIT_PROFILE_TEMPLATE_PATH = "site/edit.vm";
 
     private UserProfile getUserProfile(HttpServletRequest req) throws IOException {
         return (UserProfile) req.getAttribute("userProfile");

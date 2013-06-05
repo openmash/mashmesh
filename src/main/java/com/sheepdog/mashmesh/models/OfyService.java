@@ -8,6 +8,7 @@ public class OfyService {
     static {
         factory().register(UserProfile.class);
         factory().register(VolunteerProfile.class);
+        factory().register(RideRequest.class);
         factory().register(RideRecord.class);
 
         factory().getConversions().add(new OfyJodaInstantConverter());
@@ -16,6 +17,10 @@ public class OfyService {
 
     public static Objectify ofy() {
         return ObjectifyService.begin();
+    }
+
+    public static Objectify transactionOfy() {
+        return ObjectifyService.beginTransaction();
     }
 
     public static ObjectifyFactory factory() {

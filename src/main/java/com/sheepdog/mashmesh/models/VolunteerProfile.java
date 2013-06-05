@@ -22,8 +22,19 @@ public class VolunteerProfile {
 
     @Unindexed
     private static class AppointmentPeriod {
+        private long rideRequestId;
         private long startTimeMillis;
         @Indexed private long endTimeMillis;
+
+        @Override
+        public boolean equals(Object other) {
+            if (!(other instanceof AppointmentPeriod)) {
+                return false;
+            }
+
+            AppointmentPeriod otherAppointmentPeriod = (AppointmentPeriod) other;
+            return this.rideRequestId == otherAppointmentPeriod.rideRequestId;
+        }
     }
 
     @Id private String userId;
@@ -108,16 +119,23 @@ public class VolunteerProfile {
         return mergedIntervals;
     }
 
-    public void addAppointmentTime(DateTime departureTime, DateTime arrivalTime) {
+    public void addAppointmentTime(RideRequest rideRequest, DateTime departureTime, DateTime arrivalTime) {
         Duration commuteDuration = new Duration(departureTime, arrivalTime);
         DateTime startTime = departureTime;
         DateTime endTime = arrivalTime.plus(commuteDuration);
 
         AppointmentPeriod appointmentTime = new AppointmentPeriod();
+        appointmentTime.rideRequestId = rideRequest.getId();
         appointmentTime.startTimeMillis = startTime.getMillis();
         appointmentTime.endTimeMillis = endTime.getMillis();
 
         appointmentTimes.add(appointmentTime);
+    }
+
+    public void removeAppointmentTime(RideRequest rideRequest) {
+        AppointmentPeriod appointmentPeriod = new AppointmentPeriod();
+        appointmentPeriod.rideRequestId = rideRequest.getId();
+        appointmentTimes.remove(appointmentPeriod);
     }
 
     public boolean isTimeslotAvailable(DateTime startDateTime, DateTime endDateTime) {
@@ -251,9 +269,13 @@ public class VolunteerProfile {
         return Key.create(VolunteerProfile.class, getUserId());
     }
 
-    public static VolunteerProfile getOrCreate(UserProfile userProfile) {
+    public static VolunteerProfile get(UserProfile userProfile) {
         Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userProfile.getUserId());
-        VolunteerProfile volunteerProfile = OfyService.ofy().find(volunteerProfileKey);
+        return OfyService.ofy().find(volunteerProfileKey);
+    }
+
+    public static VolunteerProfile getOrCreate(UserProfile userProfile) {
+        VolunteerProfile volunteerProfile = get(userProfile);
 
         if (volunteerProfile == null) {
             volunteerProfile = new VolunteerProfile();

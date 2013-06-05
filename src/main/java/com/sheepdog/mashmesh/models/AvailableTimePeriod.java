@@ -5,9 +5,9 @@ import org.joda.time.LocalTime;
 
 @Unindexed
 public class AvailableTimePeriod {
-    public int day; // Monday = 1, Sunday = 7
-    public LocalTime startTime;
-    public LocalTime endTime;
+    private int day; // Monday = 1, Sunday = 7
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     public int getDay() {
         return day;

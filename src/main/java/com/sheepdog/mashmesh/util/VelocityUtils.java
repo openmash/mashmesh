@@ -1,7 +1,10 @@
 package com.sheepdog.mashmesh.util;
 
+import org.apache.velocity.Template;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.context.Context;
 
+import java.io.StringWriter;
 import java.util.Properties;
 
 public class VelocityUtils {
@@ -19,5 +22,12 @@ public class VelocityUtils {
         }
 
         return engine;
+    }
+
+    public static String renderTemplateToString(String templatePath, Context context) {
+        Template template = getInstance().getTemplate(templatePath);
+        StringWriter writer = new StringWriter();
+        template.merge(context, writer);
+        return writer.toString();
     }
 }

@@ -5,6 +5,8 @@ import com.google.appengine.api.search.*;
 import com.googlecode.objectify.Key;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import com.sheepdog.mashmesh.models.OfyService;
+import com.sheepdog.mashmesh.models.RideRequest;
+import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.util.ApplicationConfiguration;
 import org.joda.time.DateTime;
@@ -13,24 +15,32 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 public class VolunteerLocator {
+    private static final Logger logger = Logger.getLogger(VolunteerLocator.class.getCanonicalName());
     public static final int ESTIMATED_MILES_PER_HOUR = 40;
 
-    private final GeoPt patientLocation;
-    private final GeoPt appointmentLocation;
-    private final DateTime appointmentDateTime;
+    private final RideRequest rideRequest;
 
-    public VolunteerLocator(GeoPt patientLocation, GeoPt appointmentLocation, DateTime appointmentDateTime) {
-        this.patientLocation = patientLocation;
-        this.appointmentLocation = appointmentLocation;
-        this.appointmentDateTime = appointmentDateTime;
+    public VolunteerLocator(RideRequest rideRequest) {
+        this.rideRequest = rideRequest;
+    }
+
+    private GeoPt getPatientLocation() {
+        return rideRequest.getPatientProfile().getLocation();
+    }
+
+    private GeoPt getAppointmentLocation() {
+        return rideRequest.getAppointmentLocation();
+    }
+
+    private DateTime getAppointmentTime() {
+        return rideRequest.getAppointmentTime();
     }
 
     public List<VolunteerProfile> getNearbyVolunteers() {
-        String sortString = String.format("distance(location, %s)", GeoUtils.formatGeoPt(patientLocation));
-        String queryString = String.format("distance(location, %s) < maximumDistance",
-                GeoUtils.formatGeoPt(patientLocation));
+        String sortString = String.format("distance(location, %s)", GeoUtils.formatGeoPt(getPatientLocation()));
 
         SortOptions sortOptions = SortOptions.newBuilder()
                 .addSortExpression(SortExpression.newBuilder()
@@ -46,7 +56,7 @@ public class VolunteerLocator {
 
         Query query = Query.newBuilder()
                 .setOptions(queryOptions)
-                .build(ApplicationConfiguration.isDevelopment() ? "" : queryString);
+                .build("");
 
         Collection<? extends Document> documents = VolunteerProfile.getIndex().search(query).getResults();
 
@@ -54,8 +64,11 @@ public class VolunteerLocator {
 
         for (Document document : documents) {
             String userId = document.getOnlyField("userId").getText();
-            Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userId);
-            volunteerProfileKeys.add(volunteerProfileKey);
+
+            if (!rideRequest.hasDeclined(userId)) {
+                Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userId);
+                volunteerProfileKeys.add(volunteerProfileKey);
+            }
         }
 
         Map<Key<VolunteerProfile>, VolunteerProfile> profilesByKey = OfyService.ofy().get(volunteerProfileKeys);
@@ -70,16 +83,17 @@ public class VolunteerLocator {
 
     public List<VolunteerProfile> selectEligibleVolunteers(List<VolunteerProfile> volunteerProfiles) {
         List<VolunteerProfile> availableVolunteerProfiles = new ArrayList<VolunteerProfile>();
-        double distanceToAppointment = GeoUtils.distanceMiles(patientLocation, appointmentLocation);
+        double distanceToAppointment = GeoUtils.distanceMiles(getPatientLocation(), getAppointmentLocation());
 
         for (VolunteerProfile volunteerProfile : volunteerProfiles) {
-            double distanceToPatient = GeoUtils.distanceMiles(volunteerProfile.getLocation(), patientLocation);
-            double distanceFromAppointment = GeoUtils.distanceMiles(appointmentLocation, volunteerProfile.getLocation());
+            double distanceToPatient = GeoUtils.distanceMiles(volunteerProfile.getLocation(), getPatientLocation());
+            double distanceFromAppointment = GeoUtils.distanceMiles(getAppointmentLocation(),
+                    volunteerProfile.getLocation());
             double hoursToAppointment = (distanceToPatient + distanceToAppointment) / ESTIMATED_MILES_PER_HOUR;
             double hoursFromAppointment = distanceFromAppointment / ESTIMATED_MILES_PER_HOUR;
 
-            DateTime startDateTime = appointmentDateTime.minusMinutes((int) (hoursToAppointment * 60));
-            DateTime endDateTime = appointmentDateTime.plusMinutes((int) (hoursFromAppointment * 60));
+            DateTime startDateTime = getAppointmentTime().minusMinutes((int) (hoursToAppointment * 60));
+            DateTime endDateTime = getAppointmentTime().plusMinutes((int) (hoursFromAppointment * 60));
 
             if (volunteerProfile.isTimeslotAvailable(startDateTime, endDateTime) &&
                     !volunteerProfile.isTimeslotOccupied(startDateTime, endDateTime) &&

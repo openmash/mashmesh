@@ -13,6 +13,14 @@
         <servlet-class>com.sheepdog.mashmesh.servlets.EditUserProfileServlet</servlet-class>
     </servlet>
     <servlet>
+        <servlet-name>acceptPickup</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.AcceptPickupServlet</servlet-class>
+    </servlet>
+    <servlet>
+        <servlet-name>declinePickup</servlet-name>
+        <servlet-class>com.sheepdog.mashmesh.servlets.DeclinePickupServlet</servlet-class>
+    </servlet>
+    <servlet>
         <servlet-name>accessData</servlet-name>
         <servlet-class>com.sheepdog.mashmesh.servlets.AccessDataServlet</servlet-class>
     </servlet>
@@ -64,6 +72,14 @@
     <servlet-mapping>
         <servlet-name>editProfile</servlet-name>
         <url-pattern>/view/profile/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>acceptPickup</servlet-name>
+        <url-pattern>/view/acceptPickup/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>declinePickup</servlet-name>
+        <url-pattern>/view/declinePickup/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>accessData</servlet-name>

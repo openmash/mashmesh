@@ -24,7 +24,7 @@
 </head>
 <body>
     <div class="content">
-        #parse("profile/topBar.vm")
+        #parse("site/topBar.vm")
 
         #if ($messageClass && $message)
             <div class="alert alert-$messageClass">
