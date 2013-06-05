@@ -1,10 +1,7 @@
 package com.sheepdog.mashmesh.debug;
 
 import com.googlecode.objectify.Objectify;
-import com.sheepdog.mashmesh.models.OfyService;
-import com.sheepdog.mashmesh.models.RideRecord;
-import com.sheepdog.mashmesh.models.UserProfile;
-import com.sheepdog.mashmesh.models.VolunteerProfile;
+import com.sheepdog.mashmesh.models.*;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +16,7 @@ public class ResetDatastoreServlet extends HttpServlet {
         ofy.delete(ofy.query(UserProfile.class).chunkSize(100));
         ofy.delete(ofy.query(VolunteerProfile.class).chunkSize(100));
         ofy.delete(ofy.query(RideRecord.class).chunkSize(100));
+        ofy.delete(ofy.query(RideRequest.class).chunkSize(100));
 
         int documentsDeleted = VolunteerProfile.clearIndex();
 
