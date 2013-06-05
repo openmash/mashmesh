@@ -9,6 +9,6 @@
     <cron>
         <url>/tasks/cleanup-schedules/</url>
         <description>Removes expired appointments from volunteer schedules</description>
-        <schedule>every hour</schedule>
+        <schedule>every 1 hours</schedule>
     </cron>
 </cronentries>
