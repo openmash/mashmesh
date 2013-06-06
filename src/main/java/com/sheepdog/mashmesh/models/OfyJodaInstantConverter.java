@@ -1,32 +1,32 @@
 package com.sheepdog.mashmesh.models;
 
-import com.googlecode.objectify.impl.TypeUtils;
+
 import com.googlecode.objectify.impl.conv.Converter;
 import com.googlecode.objectify.impl.conv.ConverterLoadContext;
 import com.googlecode.objectify.impl.conv.ConverterSaveContext;
-import org.joda.time.ReadableInstant;
-import org.joda.time.base.AbstractInstant;
-
-import java.lang.reflect.Constructor;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 class OfyJodaInstantConverter implements Converter {
+    private static final DateTimeFormatter iso8601Formatter = ISODateTimeFormat.dateTimeNoMillis().withOffsetParsed();
+
     @Override
     public Object forDatastore(Object value, ConverterSaveContext ctx) {
-        if (!(value instanceof ReadableInstant)) {
+        if (!(value instanceof DateTime)) {
             return null;
         }
 
-        ReadableInstant readableInstant = (ReadableInstant) value;
-        return readableInstant.toInstant().toDate();
+        DateTime dateTime = (DateTime) value;
+        return iso8601Formatter.print(dateTime);
     }
 
     @Override
     public Object forPojo(Object value, Class<?> fieldType, ConverterLoadContext ctx, Object onPojo) {
-        if (!AbstractInstant.class.isAssignableFrom(fieldType)) {
+        if (!DateTime.class.isAssignableFrom(fieldType)) {
             return null;
         }
 
-        Constructor<?> ctor = TypeUtils.getConstructor(fieldType, Object.class);
-        return TypeUtils.newInstance(ctor, value);
+        return iso8601Formatter.parseDateTime((String) value);
     }
 }
