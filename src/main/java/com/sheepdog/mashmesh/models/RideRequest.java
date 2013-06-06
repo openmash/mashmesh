@@ -32,6 +32,10 @@ public class RideRequest {
         return id;
     }
 
+    void setId(Long id) {
+        this.id = id;
+    }
+
     public Key<UserProfile> getPatientUserProfileKey() {
         return patientUserProfileKey;
     }

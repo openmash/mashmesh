@@ -153,14 +153,12 @@ public class VolunteerProfile {
     }
 
     public boolean isTimeslotOccupied(DateTime startDateTime, DateTime endDateTime) {
-        long startMillisecond = startDateTime.getMillis();
-        long endMillisecond = endDateTime.getMillis();
+        Interval requestedInterval = new Interval(startDateTime, endDateTime);
 
         for (AppointmentPeriod appointmentTime : appointmentTimes) {
-            long startTimeMillis = appointmentTime.startTimeMillis;
-            long endTimeMills = appointmentTime.endTimeMillis;
+            Interval appointmentInterval = new Interval(appointmentTime.startTimeMillis, appointmentTime.endTimeMillis);
 
-            if (startTimeMillis < startMillisecond && endTimeMills > endMillisecond) {
+            if (appointmentInterval.overlaps(requestedInterval)) {
                 return true;
             }
         }
@@ -269,6 +267,16 @@ public class VolunteerProfile {
         return Key.create(VolunteerProfile.class, getUserId());
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof VolunteerProfile)) {
+            return false;
+        }
+
+        VolunteerProfile otherVolunteerProfile = (VolunteerProfile) other;
+        return this.getUserId().equals(otherVolunteerProfile.getUserId());
+    }
+
     public static VolunteerProfile get(UserProfile userProfile) {
         Key<VolunteerProfile> volunteerProfileKey = Key.create(VolunteerProfile.class, userProfile.getUserId());
         return OfyService.ofy().find(volunteerProfileKey);
@@ -288,7 +296,7 @@ public class VolunteerProfile {
     public static QueryResultIterator<VolunteerProfile> withExpiredAppointments(long cutOffTimeMillis, int chunkSize) {
         return OfyService.ofy()
                 .query(VolunteerProfile.class)
-                .filter("appointmentTimes.endTimeMills <", cutOffTimeMillis)
+                .filter("appointmentTimes.endTimeMillis <", cutOffTimeMillis)
                 .chunkSize(chunkSize)
                 .iterator();
     }
