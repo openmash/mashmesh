@@ -119,6 +119,20 @@ public class VolunteerProfile {
         return mergedIntervals;
     }
 
+    public boolean isTimeslotAvailable(DateTime startDateTime, DateTime endDateTime) {
+        // Assuming that the total interval is less than a day long
+        List<Interval> availableIntervals = getAvailableIntervals(startDateTime);
+        Interval timeslot = new Interval(startDateTime, endDateTime);
+
+        for (Interval availableInterval : availableIntervals) {
+            if (availableInterval.contains(timeslot)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public void addAppointmentTime(RideRequest rideRequest, DateTime departureTime, DateTime arrivalTime) {
         Duration commuteDuration = new Duration(departureTime, arrivalTime);
         DateTime startTime = departureTime;
@@ -136,20 +150,6 @@ public class VolunteerProfile {
         AppointmentPeriod appointmentPeriod = new AppointmentPeriod();
         appointmentPeriod.rideRequestId = rideRequest.getId();
         appointmentTimes.remove(appointmentPeriod);
-    }
-
-    public boolean isTimeslotAvailable(DateTime startDateTime, DateTime endDateTime) {
-        // Assuming that the total interval is less than a day long
-        List<Interval> availableIntervals = getAvailableIntervals(startDateTime);
-        Interval timeslot = new Interval(startDateTime, endDateTime);
-
-        for (Interval availableInterval : availableIntervals) {
-            if (availableInterval.contains(timeslot)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public boolean isTimeslotOccupied(DateTime startDateTime, DateTime endDateTime) {
