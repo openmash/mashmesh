@@ -19,6 +19,7 @@ public class CacheProxy {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void put(Object key, Object value) {
         cache.put(key, value);
     }
