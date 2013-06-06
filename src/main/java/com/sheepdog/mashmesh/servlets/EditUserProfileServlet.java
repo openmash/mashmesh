@@ -19,8 +19,13 @@ package com.sheepdog.mashmesh.servlets;
 import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.sheepdog.mashmesh.geo.GeocodeFailedException;
 import com.sheepdog.mashmesh.geo.GeocodeNotFoundException;
+import com.sheepdog.mashmesh.json.AvailableTimePeriodAdapter;
+import com.sheepdog.mashmesh.models.AvailableTimePeriod;
 import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
@@ -30,6 +35,8 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.List;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -88,16 +95,35 @@ public class EditUserProfileServlet extends HttpServlet {
         return value;
     }
 
+    private Gson getGsonForAvailableTimePeriods() {
+        GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(AvailableTimePeriod.class, new AvailableTimePeriodAdapter());
+        return gsonBuilder.create();
+    }
+
+    private String serializeAvailableTimePeriods(List<AvailableTimePeriod> availableTimePeriods) {
+        return getGsonForAvailableTimePeriods().toJson(availableTimePeriods);
+    }
+
+    private List<AvailableTimePeriod> deserializeAvailableTimePeriods(String availability) {
+        Type availableTimePeriodListType = new TypeToken<List<AvailableTimePeriod>>(){}.getType();
+        return getGsonForAvailableTimePeriods().fromJson(availability, availableTimePeriodListType);
+    }
+
     private void renderEditProfileTemplate(HttpServletRequest req, HttpServletResponse resp,
                                            UserProfile userProfile, VolunteerProfile volunteerProfile)
             throws IOException {
-        VelocityContext context = new VelocityContext();
+        VelocityContext context = VelocityUtils.getContext();
         context.put("isAdmin", isAdmin());
         context.put("logoutUrl", createLogoutUrl());
         context.put("userProfile", userProfile);
         context.put("volunteerProfile", volunteerProfile);
         context.put("messageClass", popSessionAttribute(req, "flash.class"));
         context.put("message", popSessionAttribute(req, "flash.message"));
+
+        if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
+            context.put("availability", serializeAvailableTimePeriods(volunteerProfile.getAvailableTimePeriods()));
+        }
 
         resp.setContentType("text/html");
         Template template = VelocityUtils.getInstance().getTemplate(EDIT_PROFILE_TEMPLATE_PATH);
@@ -150,6 +176,11 @@ public class EditUserProfileServlet extends HttpServlet {
         if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
             float maximumDistanceMiles = Float.parseFloat(req.getParameter("maximumDistance"));
             volunteerProfile.setMaximumDistanceMiles(maximumDistanceMiles);
+
+            String availability = req.getParameter("availability");
+            List<AvailableTimePeriod> availableTimePeriods = deserializeAvailableTimePeriods(availability);
+            volunteerProfile.setAvailableTimePeriods(availableTimePeriods);
+
             volunteerProfile.setLocation(location);
         }
 
@@ -162,7 +193,6 @@ public class EditUserProfileServlet extends HttpServlet {
             OfyService.ofy().put(userProfile);
 
             if (userProfile.getType() == UserProfile.UserType.VOLUNTEER) {
-                volunteerProfile.setAlwaysAvailable(); // TODO: Testing
                 volunteerProfile.updateDocument(userProfile);
                 OfyService.ofy().put(volunteerProfile);
             }

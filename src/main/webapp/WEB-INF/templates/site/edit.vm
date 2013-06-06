@@ -12,6 +12,7 @@
     <link href="/stylesheets/bootstrap.min.css" rel="stylesheet">
     <link href="/stylesheets/uni-form.css" media="all" rel="stylesheet" />
     <link href="/stylesheets/default.uni-form.css" media="all" rel="stylesheet" />
+    <link href="/stylesheets/available.min.css" media="all" rel="stylesheet" />
     <link href="/stylesheets/main.css" media="all" rel="stylesheet" />
 
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJpckIeO5jh3I51TyNSeDBy8rRE9BGRhk&sensor=false"
@@ -20,6 +21,7 @@
     <script type="text/javascript" src="/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="/js/uni-form.jquery.min.js"></script>
     <script type="text/javascript" src="/js/parsley.min.js"></script>
+    <script type="text/javascript" src="/js/available.min.js"></script>
     <script type="text/javascript" src="/js/userProfile.js"></script>
 </head>
 <body>
@@ -40,14 +42,14 @@
                     <label for="name">Full Name</label>
                     <div class="inputHolder">
                         <input type="text" id="name" name="name" class="textInput" data-required="true"
-                               value="$userProfile.getFullName()" />
+                               value="$esc.html($userProfile.getFullName())" />
                     </div>
                 </div>
                 <div class="ctrlHolder">
                     <label for="email">Email Address</label>
                     <div class="inputHolder">
                         <input type="text" id="email" name="email" class="textInput" data-trigger="change"
-                               data-required="true" data-type="email" value="$userProfile.getEmail()"/>
+                               data-required="true" data-type="email" value="$esc.html($userProfile.getEmail())"/>
                         <p class="formHint">Use an email address you check often</p>
                     </div>
                 </div>
@@ -57,8 +59,21 @@
                     <div class="inputHolder">
                         <input type="number" min="1" id="maximumDistance" name="maximumDistance"
                                class="textInput" data-required="true"
-                               value="$volunteerProfile.getMaximumDistanceMiles()" />
+                               value="$esc.html($volunteerProfile.getMaximumDistanceMiles())" />
                         <p class="formHint">The approximate maximum distance you are willing to drive</p>
+                    </div>
+                </div>
+                <div class="ctrlHolder">
+                    <label for="availability">Availability</label>
+                    <div class="inputHolder">
+                        <input type="hidden" min="1" id="availability" name="availability"
+                               value="$esc.html($availability)" />
+                        <div id="availabilitySelector"></div>
+                        <p class="formHint">
+                            Click once to start selecting a time interval, and click again
+                            mark or unmark it as available.
+                            Press escape to cancel selecting an interval.
+                        </p>
                     </div>
                 </div>
                 #end
@@ -66,13 +81,13 @@
                     <label for="location">Home Address</label>
                     <div class="inputHolder">
                         <textarea id="location" name="location" data-trigger="change nokey" data-required="true"
-                                  data-location="true">$userProfile.getAddress()</textarea>
+                                  data-location="true">$esc.html($userProfile.getAddress())</textarea>
                         <div id="map-canvas"></div>
                     </div>
                 </div>
                 <div class="ctrlHolder">
                     <label for="comments">Comments</label>
-                    <textarea id="comments" name="comments">$userProfile.getComments()</textarea>
+                    <textarea id="comments" name="comments">$esc.html($userProfile.getComments())</textarea>
                     <p class="formHint">Add any notes about accessibility, mobility, etc.</p>
                 </div>
                 <div class="buttonHolder">

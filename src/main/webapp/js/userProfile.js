@@ -2,6 +2,40 @@ var mashmesh = {userProfile: {}};
 
 mashmesh.userProfile.initForm = function () {
     $(".uniForm").uniform();
+
+    var inclusiveRange = function (start, end) {
+        var i, range = [];
+        for (i = start; i <= end; i++) {
+            range.push(i);
+        }
+        return range;
+    };
+
+    var $availability = $("#availability");
+
+    var available = new Available({
+       "$parent": $("#availabilitySelector"),
+       days: [
+         {name: "Sun", dayId: 7},
+         {name: "Mon", dayId: 1},
+         {name: "Tue", dayId: 2},
+         {name: "Wed", dayId: 3},
+         {name: "Thu", dayId: 4},
+         {name: "Fri", dayId: 5},
+         {name: "Sat", dayId: 6}
+       ],
+       hours: inclusiveRange(6, 18),
+       onChanged: function (availableIntervals) {
+         // TODO: Use json2.js
+         var json = JSON.stringify(availableIntervals);
+         $availability.val(json);
+       }
+    });
+
+    var serializedAvailaility = $availability.val();
+    if (serializedAvailaility !== "") {
+        available.deserialize(JSON.parse(serializedAvailaility));
+    }
 };
 
 mashmesh.userProfile.initMap = function(selector) {
