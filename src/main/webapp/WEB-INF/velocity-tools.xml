@@ -1,0 +1,5 @@
+<tools>
+    <toolbox scope="application" xhtml="true">
+        <tool key="esc" class="org.apache.velocity.tools.generic.EscapeTool" />
+    </toolbox>
+</tools>
