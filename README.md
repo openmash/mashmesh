@@ -25,16 +25,14 @@ landing page to get started. Otherwise, if you have an existing project,
 select "Create..." from the projects dropdown in the upper left of the window.
 
 Next, select "Services" from the left-hand navigation bar. Click the toggle
-switch in the "Status" columns of the services table to enable the following
-services:
+switch (shown below) in the "Status" columns of the services table to enable
+the following services:
 
 - Drive API
 - Drive SDK
 - Fusion Tables API
 - Google Maps API v3
 - Static Maps API
-
-TODO: Add picture of the services page with a status toggle highlighted.
 
 After this, you will need to create and configure service account.
 Select "API access" from the left-hand navigation bar, and then click
@@ -66,7 +64,9 @@ and fill in the missing fields as follows:
 - Fill the `google.oauth.serviceAccount` property with the "Email address"
   value given in the "Service account" section.
 
-TODO: Add a picture of the API access page with appropriate highlighting.
+The following image shows where each field is found in the API Console:
+
+![API Access Fields](https://raw.github.com/openmash/mashmesh/master/doc/client-credentials.png)
 
 
 ### Local Development
