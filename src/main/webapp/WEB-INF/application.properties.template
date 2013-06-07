@@ -1,0 +1,6 @@
+google.apiKey=
+google.oauth.applicationName=OpenMash Volunteer Ride Sharing
+google.oauth.consumerKey=
+google.oauth.consumerSecret=
+google.oauth.serviceAccount=
+web.development.baseUrl=http://localhost:8080
