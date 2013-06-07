@@ -54,8 +54,8 @@ a web application ID.
 
 Finally, you will need to configure the application to use the API
 credentials. Copy `src/main/webapp/WEB-INF/application.properties.template`
-to `src/main/webapp/WEB-INF/application.properties`. Fill in the missing
-fields as follows:
+to `src/main/webapp/WEB-INF/application.properties`. Edit application.properties
+and fill in the missing fields as follows:
 
 - Configure `google.apiKey` with the "API key" value listed in the "Simple
   API Access" section.
