@@ -77,3 +77,22 @@ the command `mvn test`. To run a local development server, issue the command
 
 
 ### Deployment
+
+The OpenMash VRS application runs on Google AppEngine. In order to
+deploy it, you will need to create an AppEngine project and configure
+the application to deploy changes to it.
+
+First, navigate to https://appengine.google.com/. Click on the "Create
+Application" button to create the application. You may be prompted to
+verify your Google account if you have no already done so. After your
+account is verified, you will be presented with a "Create an Application"
+screen. Choose a unique application identifier and application title for
+the application, and leave the authentication open to all Google Accounts.
+Click "Create Application" to complete the process.
+
+Finally, edit `src/main/webapp/WEB-INF/appengine-web.xml` and change
+the content of the `<application>openmash-rides</application>` section
+to your the application identifier you chose when creating your AppEngine
+application. Execute the command `mvn appengine:update` to deploy your
+application. When deployment finishes, you will be able to access the
+application at `http://<your-application-identifier>.appspot.com`.
