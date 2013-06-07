@@ -92,7 +92,7 @@ Click "Create Application" to complete the process.
 
 Finally, edit `src/main/webapp/WEB-INF/appengine-web.xml` and change
 the content of the `<application>openmash-rides</application>` section
-to your the application identifier you chose when creating your AppEngine
+to the application identifier you chose when creating your AppEngine
 application. Execute the command `mvn appengine:update` to deploy your
 application. When deployment finishes, you will be able to access the
 application at `http://<your-application-identifier>.appspot.com`.
