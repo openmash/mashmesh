@@ -1,14 +1,11 @@
 package com.sheepdog.mashmesh.integration;
 
 import com.google.appengine.api.users.User;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.meterware.httpunit.WebForm;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletUnitClient;
 import com.sheepdog.mashmesh.TestConstants;
 import com.sheepdog.mashmesh.geo.GeoUtils;
-import com.sheepdog.mashmesh.json.AvailableTimePeriodAdapter;
 import com.sheepdog.mashmesh.models.AvailableTimePeriod;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.models.VolunteerProfile;
@@ -19,7 +16,6 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -37,16 +33,9 @@ public class VolunteerSignupTest {
         integrationTestHelper.tearDown();
     }
 
-    public String serializeAvailability(List<AvailableTimePeriod> availableTimePeriods) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(AvailableTimePeriod.class, new AvailableTimePeriodAdapter());
-        Gson gson = gsonBuilder.create();
-        return gson.toJson(availableTimePeriods);
-    }
-
     @Test
     public void testVolunteerSignsUp() throws IOException, SAXException {
-        ServletUnitClient client = integrationTestHelper.getServletUnitClient();
+        ServletUnitClient client = integrationTestHelper.getClient();
         integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_EMAIL, false);
 
         // 1. Client lands on the root page
@@ -59,10 +48,10 @@ public class VolunteerSignupTest {
         WebForm signupForm = signupPage.getForms()[0];
         assertEquals(TestConstants.VOLUNTEER_EMAIL, signupForm.getParameterValue("email"));
 
-        String serializedTimePeriods = serializeAvailability(TestConstants.VOLUNTEER_AVAILABILITY);
+        String serializedTimePeriods = integrationTestHelper.serializeAvailability(TestConstants.VOLUNTEER_AVAILABILITY);
 
         signupForm.setParameter("name", TestConstants.VOLUNTEER_NAME);
-        signupForm.setParameter("maximumDistance", TestConstants.VOLUNTEER_MAXIMUM_DISTANCE);
+        signupForm.setParameter("maximumDistance", "" + TestConstants.VOLUNTEER_MAXIMUM_DISTANCE);
         // Use the scriptable object to set the hidden availability field - HttpUnit can't
         // simulate enough javascript to be able to drive the UI correctly.
         signupForm.getScriptableObject()
@@ -76,7 +65,7 @@ public class VolunteerSignupTest {
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
         assertEquals(TestConstants.VOLUNTEER_NAME, signupFormPostSubmit.getParameterValue("name"));
         assertEquals(TestConstants.VOLUNTEER_EMAIL, signupFormPostSubmit.getParameterValue("email"));
-        assertEquals(Float.parseFloat(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE),
+        assertEquals(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE,
                 Float.parseFloat(signupFormPostSubmit.getParameterValue("maximumDistance")),
                 0.001);
         assertEquals(serializedTimePeriods, signupFormPostSubmit.getParameterValue("availability"));

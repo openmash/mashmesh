@@ -31,7 +31,7 @@ public class PatientSignupTest {
 
     @Test
     public void testPatientSignsUp() throws IOException, SAXException {
-        ServletUnitClient client = integrationTestHelper.getServletUnitClient();
+        ServletUnitClient client = integrationTestHelper.getClient();
         integrationTestHelper.setLoggedInUser(TestConstants.PATIENT_EMAIL, false);
 
         // 1. Client lands on the root page

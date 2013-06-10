@@ -53,10 +53,6 @@
         <servlet-class>com.sheepdog.mashmesh.debug.ResetDatastoreServlet</servlet-class>
     </servlet>
     <servlet>
-        <servlet-name>taskNotification</servlet-name>
-        <servlet-class>com.sheepdog.mashmesh.tasks.SendNotificationServlet</servlet-class>
-    </servlet>
-    <servlet>
         <servlet-name>taskSnapshotToDrive</servlet-name>
         <servlet-class>com.sheepdog.mashmesh.tasks.UpdateDriveTask</servlet-class>
     </servlet>
@@ -100,10 +96,6 @@
     <servlet-mapping>
         <servlet-name>resetDatastoreDebug</servlet-name>
         <url-pattern>/debug/reset-datastore/</url-pattern>
-    </servlet-mapping>
-    <servlet-mapping>
-        <servlet-name>taskNotification</servlet-name>
-        <url-pattern>/tasks/notification/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>taskSnapshotToDrive</servlet-name>

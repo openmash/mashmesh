@@ -4,7 +4,7 @@ import com.google.api.client.util.Preconditions;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.googlecode.objectify.Objectify;
 import com.sheepdog.mashmesh.models.*;
-import com.sheepdog.mashmesh.tasks.SendNotificationServlet;
+import com.sheepdog.mashmesh.tasks.SendNotificationTask;
 import com.sheepdog.mashmesh.util.VelocityUtils;
 import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
@@ -52,7 +52,7 @@ public class DeclinePickupServlet extends HttpServlet {
             rideRequestOfy.getTxn().commit();
             volunteerProfileOfy.getTxn().commit();
 
-            SendNotificationServlet.scheduleRequest(rideRequest);
+            SendNotificationTask.scheduleRequest(rideRequest);
 
             VelocityContext context = new VelocityContext();
             context.put("userProfile", userProfile);

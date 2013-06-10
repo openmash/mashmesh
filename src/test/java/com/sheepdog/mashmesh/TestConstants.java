@@ -34,5 +34,5 @@ public class TestConstants {
 
     public static final String PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS = "Palo Alto Medical Foundation, Palo Alto, CA";
     public static final GeoPt PALO_ALTO_MEDICAL_FOUNDATION_GEOPT = new GeoPt(37.44012f, -122.161173f);
-    public static final String VOLUNTEER_MAXIMUM_DISTANCE = "20";
+    public static final int VOLUNTEER_MAXIMUM_DISTANCE = 20;
 }
