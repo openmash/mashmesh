@@ -11,11 +11,11 @@ public class TestConstants {
     public static final String PATIENT_NAME = "John Smith";
     public static final String PATIENT_EMAIL = "patient-1@example.com";
 
-    public static final String VOLUNTEER_NAME = "Diane Fraser";
-    public static final String VOLUNTEER_EMAIL = "volunteer-1@example.com";
-    public static final String VOLUNTEER_COMMENTS = "I will try to be five minutes early";
+    public static final String VOLUNTEER_1_NAME = "Diane Fraser";
+    public static final String VOLUNTEER_1_EMAIL = "volunteer-1@example.com";
+    public static final String VOLUNTEER_1_COMMENTS = "I will try to be five minutes early";
 
-    public static final List<AvailableTimePeriod> VOLUNTEER_AVAILABILITY = Arrays.asList(
+    public static final List<AvailableTimePeriod> VOLUNTEER_1_AVAILABILITY = Arrays.asList(
             new AvailableTimePeriod().setDay(DateTimeConstants.SUNDAY).setStartTime(6).setEndTime(20),
             new AvailableTimePeriod().setDay(DateTimeConstants.TUESDAY).setStartTime(6).setEndTime(10),
             new AvailableTimePeriod().setDay(DateTimeConstants.TUESDAY).setStartTime(13).setEndTime(17),

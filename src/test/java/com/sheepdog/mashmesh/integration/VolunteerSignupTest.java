@@ -36,7 +36,7 @@ public class VolunteerSignupTest {
     @Test
     public void testVolunteerSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();
-        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_EMAIL, false);
+        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_1_EMAIL, false);
 
         // 1. Client lands on the root page
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -46,25 +46,25 @@ public class VolunteerSignupTest {
 
         // 3. Volunteer fills out the signup form
         WebForm signupForm = signupPage.getForms()[0];
-        assertEquals(TestConstants.VOLUNTEER_EMAIL, signupForm.getParameterValue("email"));
+        assertEquals(TestConstants.VOLUNTEER_1_EMAIL, signupForm.getParameterValue("email"));
 
-        String serializedTimePeriods = integrationTestHelper.serializeAvailability(TestConstants.VOLUNTEER_AVAILABILITY);
+        String serializedTimePeriods = integrationTestHelper.serializeAvailability(TestConstants.VOLUNTEER_1_AVAILABILITY);
 
-        signupForm.setParameter("name", TestConstants.VOLUNTEER_NAME);
+        signupForm.setParameter("name", TestConstants.VOLUNTEER_1_NAME);
         signupForm.setParameter("maximumDistance", "" + TestConstants.VOLUNTEER_MAXIMUM_DISTANCE);
         // Use the scriptable object to set the hidden availability field - HttpUnit can't
         // simulate enough javascript to be able to drive the UI correctly.
         signupForm.getScriptableObject()
                 .setParameterValue("availability", serializedTimePeriods);
         signupForm.setParameter("location", TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS);
-        signupForm.setParameter("comments", TestConstants.VOLUNTEER_COMMENTS);
+        signupForm.setParameter("comments", TestConstants.VOLUNTEER_1_COMMENTS);
         WebResponse signupPagePostSubmit = signupForm.submit();
 
         // 4. Volunteer is informed that the page was submitted successfully
         signupPagePostSubmit.getElementsWithAttribute("class", "alert alert-success");
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
-        assertEquals(TestConstants.VOLUNTEER_NAME, signupFormPostSubmit.getParameterValue("name"));
-        assertEquals(TestConstants.VOLUNTEER_EMAIL, signupFormPostSubmit.getParameterValue("email"));
+        assertEquals(TestConstants.VOLUNTEER_1_NAME, signupFormPostSubmit.getParameterValue("name"));
+        assertEquals(TestConstants.VOLUNTEER_1_EMAIL, signupFormPostSubmit.getParameterValue("email"));
         assertEquals(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE,
                 Float.parseFloat(signupFormPostSubmit.getParameterValue("maximumDistance")),
                 0.001);
@@ -81,7 +81,7 @@ public class VolunteerSignupTest {
 
         // 7. Make sure that we saved the volunteer's availability properly.
         VolunteerProfile volunteerProfile = VolunteerProfile.get(userProfile);
-        assertEquals(new HashSet<AvailableTimePeriod>(TestConstants.VOLUNTEER_AVAILABILITY),
+        assertEquals(new HashSet<AvailableTimePeriod>(TestConstants.VOLUNTEER_1_AVAILABILITY),
                 new HashSet<AvailableTimePeriod>(volunteerProfile.getAvailableTimePeriods()));
     }
 }

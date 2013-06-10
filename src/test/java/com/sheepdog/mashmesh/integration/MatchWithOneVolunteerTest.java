@@ -44,12 +44,12 @@ public class MatchWithOneVolunteerTest {
         integrationTestHelper.signUpPatient(patientConfig);
 
         VolunteerConfig volunteerConfig = new VolunteerConfig()
-                .setName(TestConstants.VOLUNTEER_NAME)
-                .setEmail(TestConstants.VOLUNTEER_EMAIL)
+                .setName(TestConstants.VOLUNTEER_1_NAME)
+                .setEmail(TestConstants.VOLUNTEER_1_EMAIL)
                 .setAddress(TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS)
                 .setMaximumDistance(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE)
-                .setAvailableTimePeriods(TestConstants.VOLUNTEER_AVAILABILITY)
-                .setComments(TestConstants.VOLUNTEER_COMMENTS);
+                .setAvailableTimePeriods(TestConstants.VOLUNTEER_1_AVAILABILITY)
+                .setComments(TestConstants.VOLUNTEER_1_COMMENTS);
 
         integrationTestHelper.signUpVolunteer(volunteerConfig);
 
@@ -91,12 +91,12 @@ public class MatchWithOneVolunteerTest {
         integrationTestHelper.signUpPatient(patientConfig);
 
         VolunteerConfig volunteerConfig = new VolunteerConfig()
-                .setName(TestConstants.VOLUNTEER_NAME)
-                .setEmail(TestConstants.VOLUNTEER_EMAIL)
+                .setName(TestConstants.VOLUNTEER_1_NAME)
+                .setEmail(TestConstants.VOLUNTEER_1_EMAIL)
                 .setAddress(TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS)
                 .setMaximumDistance(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE)
-                .setAvailableTimePeriods(TestConstants.VOLUNTEER_AVAILABILITY)
-                .setComments(TestConstants.VOLUNTEER_COMMENTS);
+                .setAvailableTimePeriods(TestConstants.VOLUNTEER_1_AVAILABILITY)
+                .setComments(TestConstants.VOLUNTEER_1_COMMENTS);
 
         integrationTestHelper.signUpVolunteer(volunteerConfig);
 
@@ -143,7 +143,7 @@ public class MatchWithOneVolunteerTest {
         assertTrue(points.size() > 0);
 
         // 5. Accept the pickup request sent in the email
-        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_EMAIL, false);
+        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_1_EMAIL, false);
         WebResponse acceptPage = client.getResponse(acceptLink);
         assertEquals("Pickup Accepted", acceptPage.getElementsByTagName("h1")[0].getText());
 
@@ -165,12 +165,12 @@ public class MatchWithOneVolunteerTest {
         integrationTestHelper.signUpPatient(patientConfig);
 
         VolunteerConfig volunteerConfig = new VolunteerConfig()
-                .setName(TestConstants.VOLUNTEER_NAME)
-                .setEmail(TestConstants.VOLUNTEER_EMAIL)
+                .setName(TestConstants.VOLUNTEER_1_NAME)
+                .setEmail(TestConstants.VOLUNTEER_1_EMAIL)
                 .setAddress(TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS)
                 .setMaximumDistance(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE)
-                .setAvailableTimePeriods(TestConstants.VOLUNTEER_AVAILABILITY)
-                .setComments(TestConstants.VOLUNTEER_COMMENTS);
+                .setAvailableTimePeriods(TestConstants.VOLUNTEER_1_AVAILABILITY)
+                .setComments(TestConstants.VOLUNTEER_1_COMMENTS);
 
         integrationTestHelper.signUpVolunteer(volunteerConfig);
 
@@ -203,7 +203,7 @@ public class MatchWithOneVolunteerTest {
                 sentVolunteerMessage.getHtmlBody(), "Decline");
 
         // 4. Decline the appointment pickup request
-        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_EMAIL, false);
+        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_1_EMAIL, false);
         WebResponse declinePage = client.getResponse(declineLink);
         assertEquals("Pickup Declined", declinePage.getElementsByTagName("h1")[0].getText());
 
