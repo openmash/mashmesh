@@ -2,12 +2,16 @@ package com.sheepdog.mashmesh.integration;
 
 import com.gargoylesoftware.htmlunit.html.HtmlElement;
 import com.google.appengine.api.mail.MailServicePb;
+import com.google.appengine.api.users.User;
 import com.meterware.httpunit.*;
 import com.meterware.servletunit.ServletUnitClient;
 import com.sheepdog.mashmesh.TestConstants;
+import com.sheepdog.mashmesh.models.RideRecord;
+import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.polyline.Point;
 import com.sheepdog.mashmesh.polyline.PolylineDecoder;
 import com.sheepdog.mashmesh.tasks.SendNotificationTask;
+import com.sheepdog.mashmesh.util.CollectionUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,6 +82,9 @@ public class MatchWithOneVolunteerTest {
 
         MailServicePb.MailMessage sentPatientMessage = sentMessages.get(0);
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
+
+        // 4. Make sure that no exportable ride record was generated
+        assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
     }
 
     @Test
@@ -88,7 +95,7 @@ public class MatchWithOneVolunteerTest {
                 .setEmail(TestConstants.PATIENT_EMAIL)
                 .setAddress(TestConstants.EAST_BAYSHORE_EPA_ADDRESS);
 
-        integrationTestHelper.signUpPatient(patientConfig);
+        User patientUser = integrationTestHelper.signUpPatient(patientConfig);
 
         VolunteerConfig volunteerConfig = new VolunteerConfig()
                 .setName(TestConstants.VOLUNTEER_1_NAME)
@@ -98,7 +105,7 @@ public class MatchWithOneVolunteerTest {
                 .setAvailableTimePeriods(TestConstants.VOLUNTEER_1_AVAILABILITY)
                 .setComments(TestConstants.VOLUNTEER_1_COMMENTS);
 
-        integrationTestHelper.signUpVolunteer(volunteerConfig);
+        User volunteerUser = integrationTestHelper.signUpVolunteer(volunteerConfig);
 
         integrationTestHelper.setNotLoggedIn();
 
@@ -152,6 +159,14 @@ public class MatchWithOneVolunteerTest {
         MailServicePb.MailMessage sentPatientMessage = sentMessages.get(1);
 
         assertTrue(sentPatientMessage.getSubject().startsWith("Appointment Pickup"));
+
+        // 7. Make sure that an exportable ride record was generated
+        List<RideRecord> rideRecords = CollectionUtils.listOfIterator(RideRecord.getExportableRecords().iterator());
+        assertTrue(rideRecords.size() == 1);
+
+        RideRecord rideRecord = rideRecords.get(0);
+        assertEquals(UserProfile.get(patientUser).getKey(), rideRecord.getPatientProfileKey());
+        assertEquals(UserProfile.get(volunteerUser).getKey(), rideRecord.getVolunteerUserProfileKey());
     }
 
     @Test
@@ -216,5 +231,8 @@ public class MatchWithOneVolunteerTest {
 
         MailServicePb.MailMessage sentPatientMessage = sentMessages.get(1);
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
+
+        // 6. Make sure that no exportable ride record was generated
+        assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
     }
 }

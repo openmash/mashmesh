@@ -171,7 +171,7 @@ public class IntegrationTestHelper {
         return gson.toJson(availableTimePeriods);
     }
 
-    public void signUpPatient(PatientConfig patientConfig) throws SAXException, IOException {
+    public User signUpPatient(PatientConfig patientConfig) throws SAXException, IOException {
         setLoggedInUser(patientConfig.getEmail(), false);
 
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -183,9 +183,11 @@ public class IntegrationTestHelper {
         signupForm.submit();
 
         observeRateLimit();
+
+        return getUser();
     }
 
-    public void signUpVolunteer(VolunteerConfig volunteerConfig) throws IOException, SAXException {
+    public User signUpVolunteer(VolunteerConfig volunteerConfig) throws IOException, SAXException {
         String serializedTimePeriods = serializeAvailability(volunteerConfig.getAvailableTimePeriods());
 
         setLoggedInUser(volunteerConfig.getEmail(), false);
@@ -205,6 +207,8 @@ public class IntegrationTestHelper {
         signupForm.submit();
 
         observeRateLimit();
+
+        return getUser();
     }
 
     public int getTaskCount(String queueName) {
