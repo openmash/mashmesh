@@ -76,7 +76,7 @@ public class IntegrationTestHelper {
 
     public void observeRateLimit() {
         try {
-            Thread.sleep(5000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             // This is not going to happen, so satisfy Java with a runtime exception
             throw new RuntimeException(e);
