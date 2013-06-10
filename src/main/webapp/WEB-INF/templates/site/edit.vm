@@ -70,9 +70,10 @@
                                value="$esc.html($availability)" />
                         <div id="availabilitySelector"></div>
                         <p class="formHint">
-                            Click once to start selecting a time interval, and click again
-                            to mark or unmark it as available.
-                            Press escape to cancel selecting an interval.
+                            Click a white square and drag out a rectangle to mark a time
+                            period as available for pickups. Click and drag from an available
+                            square to unmark a time period.
+                            Press escape to cancel marking an interval.
                         </p>
                     </div>
                 </div>
