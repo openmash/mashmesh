@@ -65,6 +65,7 @@ public class IntegrationTestHelper {
         servletRunner.shutDown();
 
         localServiceTestHelper.tearDown();
+        Thread.sleep(5000); // Sleep five seconds to avoid rate limits on Google APIs
     }
 
     public ServletUnitClient getServletUnitClient() {
