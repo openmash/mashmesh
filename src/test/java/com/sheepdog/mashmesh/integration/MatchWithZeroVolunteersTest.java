@@ -6,6 +6,8 @@ import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletUnitClient;
 import com.sheepdog.mashmesh.TestLocationConstants;
+import com.sheepdog.mashmesh.models.OfyService;
+import com.sheepdog.mashmesh.models.RideRequest;
 import com.sheepdog.mashmesh.tasks.SendNotificationTask;
 import org.junit.After;
 import org.junit.Before;
@@ -58,5 +60,8 @@ public class MatchWithZeroVolunteersTest {
         MailServicePb.MailMessage sentMessage = sentMessages.get(0);
 
         assertTrue(sentMessage.getSubject().startsWith("No Pickup Available"));
+
+        // Make sure that no ride requests remain
+        assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 }

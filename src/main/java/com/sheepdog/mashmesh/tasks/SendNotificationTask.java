@@ -97,6 +97,7 @@ public class SendNotificationTask implements DeferredTask {
         try {
             if (volunteerProfile == null) {
                 PickupNotification.sendFailureNotification(rideRequest);
+                OfyService.ofy().delete(rideRequest);
                 return;
             }
 

@@ -6,7 +6,9 @@ import com.google.appengine.api.users.User;
 import com.meterware.httpunit.*;
 import com.meterware.servletunit.ServletUnitClient;
 import com.sheepdog.mashmesh.TestLocationConstants;
+import com.sheepdog.mashmesh.models.OfyService;
 import com.sheepdog.mashmesh.models.RideRecord;
+import com.sheepdog.mashmesh.models.RideRequest;
 import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.polyline.Point;
 import com.sheepdog.mashmesh.polyline.PolylineDecoder;
@@ -71,6 +73,9 @@ public class MatchWithOneVolunteerTest {
 
         // 4. Make sure that no exportable ride record was generated
         assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
+
+        // 5. Make sure the ride request was deleted
+        assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
     @Test
@@ -139,6 +144,9 @@ public class MatchWithOneVolunteerTest {
         RideRecord rideRecord = rideRecords.get(0);
         assertEquals(UserProfile.get(patientUser).getKey(), rideRecord.getPatientProfileKey());
         assertEquals(UserProfile.get(volunteerUser).getKey(), rideRecord.getVolunteerUserProfileKey());
+
+        // 8. Make sure the ride request was deleted
+        assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
     @Test
@@ -192,6 +200,9 @@ public class MatchWithOneVolunteerTest {
 
         // 6. Make sure that no exportable ride record was generated
         assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
+
+        // 7. Make sure the ride request was deleted
+        assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
     @Test
