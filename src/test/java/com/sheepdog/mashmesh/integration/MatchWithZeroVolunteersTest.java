@@ -5,9 +5,8 @@ import com.meterware.httpunit.PostMethodWebRequest;
 import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletUnitClient;
-import com.sheepdog.mashmesh.TestConstants;
+import com.sheepdog.mashmesh.TestLocationConstants;
 import com.sheepdog.mashmesh.tasks.SendNotificationTask;
-import com.sheepdog.mashmesh.util.CollectionUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -34,19 +33,14 @@ public class MatchWithZeroVolunteersTest {
 
     @Test
     public void testMatchWithoutVolunteer() throws IOException, SAXException {
-        PatientConfig patientConfig = new PatientConfig()
-                .setName(TestConstants.PATIENT_NAME)
-                .setEmail(TestConstants.PATIENT_EMAIL)
-                .setAddress(TestConstants.EAST_BAYSHORE_EPA_ADDRESS);
-
-        integrationTestHelper.signUpPatient(patientConfig);
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
         integrationTestHelper.setNotLoggedIn();
 
         ServletUnitClient client = integrationTestHelper.getClient();
 
         WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", patientConfig.getEmail());
-        request.setParameter("appointmentAddress", TestConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
+        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
+        request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
         request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
 
         WebResponse response = client.getResponse(request);

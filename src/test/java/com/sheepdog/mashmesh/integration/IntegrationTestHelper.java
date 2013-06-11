@@ -155,6 +155,14 @@ public class IntegrationTestHelper {
         getAppEngineAttributes().put(USER_ID_ATTRIBUTE_NAME, getUserId(emailAddress));
     }
 
+    public void setLoggedInUser(PatientConfig patientConfig) {
+        setLoggedInUser(patientConfig.getEmail(), false);
+    }
+
+    public void setLoggedInUser(VolunteerConfig volunteerConfig) {
+        setLoggedInUser(volunteerConfig.getEmail(), false);
+    }
+
     public User getUser() {
         return UserServiceFactory.getUserService().getCurrentUser();
     }

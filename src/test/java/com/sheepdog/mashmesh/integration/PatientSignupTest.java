@@ -4,7 +4,7 @@ import com.google.appengine.api.users.User;
 import com.meterware.httpunit.WebForm;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletUnitClient;
-import com.sheepdog.mashmesh.TestConstants;
+import com.sheepdog.mashmesh.TestLocationConstants;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import com.sheepdog.mashmesh.models.UserProfile;
 import org.junit.After;
@@ -32,7 +32,7 @@ public class PatientSignupTest {
     @Test
     public void testPatientSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();
-        integrationTestHelper.setLoggedInUser(TestConstants.PATIENT_EMAIL, false);
+        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.patient1Config);
 
         // 1. Client lands on the root page
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -42,18 +42,20 @@ public class PatientSignupTest {
 
         // 3. Patient fills out the signup form
         WebForm signupForm = signupPage.getForms()[0];
-        assertEquals(TestConstants.PATIENT_EMAIL, signupForm.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.patient1Config.getEmail(), signupForm.getParameterValue("email"));
 
-        signupForm.setParameter("name", TestConstants.PATIENT_NAME);
-        signupForm.setParameter("location", TestConstants.EAST_BAYSHORE_EPA_ADDRESS);
+        signupForm.setParameter("name", IntegrationTestConstants.patient1Config.getName());
+        signupForm.setParameter("location", IntegrationTestConstants.patient1Config.getAddress());
         WebResponse signupPagePostSubmit = signupForm.submit();
 
         // 4. Patient is informed that the page was submitted successfully
         signupPagePostSubmit.getElementsWithAttribute("class", "alert alert-success");
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
-        assertEquals(TestConstants.PATIENT_NAME, signupFormPostSubmit.getParameterValue("name"));
-        assertEquals(TestConstants.PATIENT_EMAIL, signupFormPostSubmit.getParameterValue("email"));
-        assertEquals(TestConstants.EAST_BAYSHORE_EPA_ADDRESS, signupFormPostSubmit.getParameterValue("location"));
+        assertEquals(IntegrationTestConstants.patient1Config.getName(), signupFormPostSubmit.getParameterValue("name"));
+        assertEquals(IntegrationTestConstants.patient1Config.getEmail(),
+                signupFormPostSubmit.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.patient1Config.getAddress(),
+                signupFormPostSubmit.getParameterValue("location"));
 
         // 5. Make sure that we saved the new user as a patient
         User user = integrationTestHelper.getUser();
@@ -61,6 +63,6 @@ public class PatientSignupTest {
         assertEquals(UserProfile.UserType.PATIENT, userProfile.getType());
 
         // 6. Make sure that we assigned them a location somewhere around East Palo Alto
-        assertTrue(GeoUtils.distanceMiles(userProfile.getLocation(), TestConstants.EAST_BAYSHORE_EPA_GEOPT) < 4);
+        assertTrue(GeoUtils.distanceMiles(userProfile.getLocation(), TestLocationConstants.EAST_BAYSHORE_EPA_GEOPT) < 4);
     }
 }

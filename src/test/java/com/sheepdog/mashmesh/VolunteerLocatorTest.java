@@ -50,8 +50,8 @@ public class VolunteerLocatorTest {
     public void testAvailabilityWithHole() {
         Objectify ofy = OfyService.ofy();
 
-        UserProfile patientProfile = createProfile("patient-1", TestConstants.EAST_BAYSHORE_EPA_GEOPT);
-        UserProfile volunteerUserProfile = createProfile("volunteer-1", TestConstants.UNIVERSITY_AVENUE_PA_GEOPT);
+        UserProfile patientProfile = createProfile("patient-1", TestLocationConstants.EAST_BAYSHORE_EPA_GEOPT);
+        UserProfile volunteerUserProfile = createProfile("volunteer-1", TestLocationConstants.UNIVERSITY_AVENUE_PA_GEOPT);
 
         VolunteerProfile volunteerProfile = new VolunteerProfile();
         volunteerProfile.setUserId("volunteer-1");
@@ -68,14 +68,14 @@ public class VolunteerLocatorTest {
         period2.setEndTime(new LocalTime(18, 0));
 
         volunteerProfile.setAvailableTimePeriods(Arrays.asList(period1, period2));
-        volunteerProfile.setLocation(TestConstants.UNIVERSITY_AVENUE_PA_GEOPT);
+        volunteerProfile.setLocation(TestLocationConstants.UNIVERSITY_AVENUE_PA_GEOPT);
 
         ofy.put(volunteerProfile);
 
         DateTime appointmentTime = iso8601Formatter.parseDateTime("2013-06-05T13:35:00-07:00");
         RideRequest rideRequest = new RideRequest();
         rideRequest.setPatientUserProfileKey(patientProfile.getKey());
-        rideRequest.setAppointmentLocation(TestConstants.PALO_ALTO_MEDICAL_FOUNDATION_GEOPT);
+        rideRequest.setAppointmentLocation(TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_GEOPT);
         rideRequest.setAppointmentTime(appointmentTime);
         ofy.put(rideRequest);
 

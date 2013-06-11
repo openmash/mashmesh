@@ -4,7 +4,7 @@ import com.google.appengine.api.users.User;
 import com.meterware.httpunit.WebForm;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletUnitClient;
-import com.sheepdog.mashmesh.TestConstants;
+import com.sheepdog.mashmesh.TestLocationConstants;
 import com.sheepdog.mashmesh.geo.GeoUtils;
 import com.sheepdog.mashmesh.models.AvailableTimePeriod;
 import com.sheepdog.mashmesh.models.UserProfile;
@@ -36,7 +36,7 @@ public class VolunteerSignupTest {
     @Test
     public void testVolunteerSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();
-        integrationTestHelper.setLoggedInUser(TestConstants.VOLUNTEER_1_EMAIL, false);
+        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.volunteer1Config);
 
         // 1. Client lands on the root page
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -46,30 +46,33 @@ public class VolunteerSignupTest {
 
         // 3. Volunteer fills out the signup form
         WebForm signupForm = signupPage.getForms()[0];
-        assertEquals(TestConstants.VOLUNTEER_1_EMAIL, signupForm.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.volunteer1Config.getEmail(), signupForm.getParameterValue("email"));
 
-        String serializedTimePeriods = integrationTestHelper.serializeAvailability(TestConstants.VOLUNTEER_1_AVAILABILITY);
+        String serializedTimePeriods = integrationTestHelper.serializeAvailability(
+                IntegrationTestConstants.volunteer1Config.getAvailableTimePeriods());
 
-        signupForm.setParameter("name", TestConstants.VOLUNTEER_1_NAME);
-        signupForm.setParameter("maximumDistance", "" + TestConstants.VOLUNTEER_MAXIMUM_DISTANCE);
+        signupForm.setParameter("name", IntegrationTestConstants.volunteer1Config.getName());
+        signupForm.setParameter("maximumDistance", "" + IntegrationTestConstants.volunteer1Config.getMaximumDistance());
         // Use the scriptable object to set the hidden availability field - HttpUnit can't
         // simulate enough javascript to be able to drive the UI correctly.
         signupForm.getScriptableObject()
                 .setParameterValue("availability", serializedTimePeriods);
-        signupForm.setParameter("location", TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS);
-        signupForm.setParameter("comments", TestConstants.VOLUNTEER_1_COMMENTS);
+        signupForm.setParameter("location", IntegrationTestConstants.volunteer1Config.getAddress());
+        signupForm.setParameter("comments", IntegrationTestConstants.volunteer1Config.getComments());
         WebResponse signupPagePostSubmit = signupForm.submit();
 
         // 4. Volunteer is informed that the page was submitted successfully
         signupPagePostSubmit.getElementsWithAttribute("class", "alert alert-success");
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
-        assertEquals(TestConstants.VOLUNTEER_1_NAME, signupFormPostSubmit.getParameterValue("name"));
-        assertEquals(TestConstants.VOLUNTEER_1_EMAIL, signupFormPostSubmit.getParameterValue("email"));
-        assertEquals(TestConstants.VOLUNTEER_MAXIMUM_DISTANCE,
+        assertEquals(IntegrationTestConstants.volunteer1Config.getName(),
+                signupFormPostSubmit.getParameterValue("name"));
+        assertEquals(IntegrationTestConstants.volunteer1Config.getEmail(),
+                signupFormPostSubmit.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.volunteer1Config.getMaximumDistance(),
                 Float.parseFloat(signupFormPostSubmit.getParameterValue("maximumDistance")),
                 0.001);
         assertEquals(serializedTimePeriods, signupFormPostSubmit.getParameterValue("availability"));
-        assertEquals(TestConstants.UNIVERSITY_AVENUE_PA_ADDRESS, signupFormPostSubmit.getParameterValue("location"));
+        assertEquals(TestLocationConstants.UNIVERSITY_AVENUE_PA_ADDRESS, signupFormPostSubmit.getParameterValue("location"));
 
         // 5. Make sure that we saved the new user as a volunteer
         User user = integrationTestHelper.getUser();
@@ -77,11 +80,11 @@ public class VolunteerSignupTest {
         assertEquals(UserProfile.UserType.VOLUNTEER, userProfile.getType());
 
         // 6. Make sure that we assigned them a location somewhere around University Avenue
-        assertTrue(GeoUtils.distanceMiles(userProfile.getLocation(), TestConstants.UNIVERSITY_AVENUE_PA_GEOPT) < 4);
+        assertTrue(GeoUtils.distanceMiles(userProfile.getLocation(), TestLocationConstants.UNIVERSITY_AVENUE_PA_GEOPT) < 4);
 
         // 7. Make sure that we saved the volunteer's availability properly.
         VolunteerProfile volunteerProfile = VolunteerProfile.get(userProfile);
-        assertEquals(new HashSet<AvailableTimePeriod>(TestConstants.VOLUNTEER_1_AVAILABILITY),
+        assertEquals(new HashSet<AvailableTimePeriod>(IntegrationTestConstants.volunteer1Config.getAvailableTimePeriods()),
                 new HashSet<AvailableTimePeriod>(volunteerProfile.getAvailableTimePeriods()));
     }
 }
