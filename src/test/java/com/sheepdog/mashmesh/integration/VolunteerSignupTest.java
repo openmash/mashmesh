@@ -36,7 +36,7 @@ public class VolunteerSignupTest {
     @Test
     public void testVolunteerSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();
-        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.volunteer1Config);
+        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.VOLUNTEER_1);
 
         // 1. Client lands on the root page
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -46,29 +46,29 @@ public class VolunteerSignupTest {
 
         // 3. Volunteer fills out the signup form
         WebForm signupForm = signupPage.getForms()[0];
-        assertEquals(IntegrationTestConstants.volunteer1Config.getEmail(), signupForm.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.VOLUNTEER_1.getEmail(), signupForm.getParameterValue("email"));
 
         String serializedTimePeriods = integrationTestHelper.serializeAvailability(
-                IntegrationTestConstants.volunteer1Config.getAvailableTimePeriods());
+                IntegrationTestConstants.VOLUNTEER_1.getAvailableTimePeriods());
 
-        signupForm.setParameter("name", IntegrationTestConstants.volunteer1Config.getName());
-        signupForm.setParameter("maximumDistance", "" + IntegrationTestConstants.volunteer1Config.getMaximumDistance());
+        signupForm.setParameter("name", IntegrationTestConstants.VOLUNTEER_1.getName());
+        signupForm.setParameter("maximumDistance", "" + IntegrationTestConstants.VOLUNTEER_1.getMaximumDistance());
         // Use the scriptable object to set the hidden availability field - HttpUnit can't
         // simulate enough javascript to be able to drive the UI correctly.
         signupForm.getScriptableObject()
                 .setParameterValue("availability", serializedTimePeriods);
-        signupForm.setParameter("location", IntegrationTestConstants.volunteer1Config.getAddress());
-        signupForm.setParameter("comments", IntegrationTestConstants.volunteer1Config.getComments());
+        signupForm.setParameter("location", IntegrationTestConstants.VOLUNTEER_1.getAddress());
+        signupForm.setParameter("comments", IntegrationTestConstants.VOLUNTEER_1.getComments());
         WebResponse signupPagePostSubmit = signupForm.submit();
 
         // 4. Volunteer is informed that the page was submitted successfully
         signupPagePostSubmit.getElementsWithAttribute("class", "alert alert-success");
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
-        assertEquals(IntegrationTestConstants.volunteer1Config.getName(),
+        assertEquals(IntegrationTestConstants.VOLUNTEER_1.getName(),
                 signupFormPostSubmit.getParameterValue("name"));
-        assertEquals(IntegrationTestConstants.volunteer1Config.getEmail(),
+        assertEquals(IntegrationTestConstants.VOLUNTEER_1.getEmail(),
                 signupFormPostSubmit.getParameterValue("email"));
-        assertEquals(IntegrationTestConstants.volunteer1Config.getMaximumDistance(),
+        assertEquals(IntegrationTestConstants.VOLUNTEER_1.getMaximumDistance(),
                 Float.parseFloat(signupFormPostSubmit.getParameterValue("maximumDistance")),
                 0.001);
         assertEquals(serializedTimePeriods, signupFormPostSubmit.getParameterValue("availability"));
@@ -84,7 +84,7 @@ public class VolunteerSignupTest {
 
         // 7. Make sure that we saved the volunteer's availability properly.
         VolunteerProfile volunteerProfile = VolunteerProfile.get(userProfile);
-        assertEquals(new HashSet<AvailableTimePeriod>(IntegrationTestConstants.volunteer1Config.getAvailableTimePeriods()),
+        assertEquals(new HashSet<AvailableTimePeriod>(IntegrationTestConstants.VOLUNTEER_1.getAvailableTimePeriods()),
                 new HashSet<AvailableTimePeriod>(volunteerProfile.getAvailableTimePeriods()));
     }
 }

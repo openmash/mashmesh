@@ -12,6 +12,9 @@ public class TestLocationConstants {
     public static final String MENLO_PARK_ADDRESS = "611 Coleman Avenue, Menlo Park, CA";
     public static final GeoPt MENLO_PARK_GEOPT = new GeoPt(37.461421f, -122.160246f);
 
+    public static final String OAKLAND_ADDRESS = "696 18th Street, Oakland, CA";
+    public static final GeoPt OAKLAND_GEOPT = new GeoPt(37.8094f, -122.275194f);
+
     public static final String PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS = "Palo Alto Medical Foundation, Palo Alto, CA";
     public static final GeoPt PALO_ALTO_MEDICAL_FOUNDATION_GEOPT = new GeoPt(37.44012f, -122.161173f);
 }

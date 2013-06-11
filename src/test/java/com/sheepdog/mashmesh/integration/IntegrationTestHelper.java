@@ -13,7 +13,9 @@ import com.google.appengine.tools.development.testing.*;
 import com.google.apphosting.api.ApiProxy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.meterware.httpunit.PostMethodWebRequest;
 import com.meterware.httpunit.WebForm;
+import com.meterware.httpunit.WebRequest;
 import com.meterware.httpunit.WebResponse;
 import com.meterware.servletunit.ServletRunner;
 import com.meterware.servletunit.ServletUnitClient;
@@ -56,6 +58,8 @@ public class IntegrationTestHelper {
 
     private ServletUnitClient client = null;
 
+    private int nextEmailIndex = 0;
+
     public static class HtmlClientWrapper {
         private final WebClient client;
         private final HtmlPage page;
@@ -95,6 +99,7 @@ public class IntegrationTestHelper {
         servletRunner.shutDown();
 
         localServiceTestHelper.tearDown();
+        nextEmailIndex = 0;
         observeRateLimit();
     }
 
@@ -219,6 +224,26 @@ public class IntegrationTestHelper {
         return getUser();
     }
 
+    public void runNotification(PatientConfig patientConfig, String appointmentAddress, String appointmentTime)
+            throws IOException, SAXException {
+        setNotLoggedIn();
+
+        WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
+        request.setParameter("patientEmail", patientConfig.getEmail());
+        request.setParameter("appointmentAddress", appointmentAddress);
+        request.setParameter("appointmentTime", appointmentTime);
+
+        WebResponse response = client.getResponse(request);
+
+        if (response.getResponseCode() != 200) {
+            throw new RuntimeException("Failed to trigger appointment notification");
+        }
+
+        if (!waitForTask()) {
+            throw new RuntimeException("No task executed");
+        }
+    }
+
     public int getTaskCount(String queueName) {
         LocalTaskQueue localTaskQueue = LocalTaskQueueTestConfig.getLocalTaskQueue();
         QueueStateInfo queueState = localTaskQueue.getQueueStateInfo().get(queueName);
@@ -235,5 +260,29 @@ public class IntegrationTestHelper {
 
     public List<MailServicePb.MailMessage> getSentEmailMessages() {
         return LocalMailServiceTestConfig.getLocalMailService().getSentMessages();
+    }
+
+    public MailServicePb.MailMessage popNextEmailMessage() {
+        int emailIndex = nextEmailIndex;
+        nextEmailIndex++;
+        List<MailServicePb.MailMessage> sentMessages = getSentEmailMessages();
+
+        if (emailIndex >= sentMessages.size()) {
+            throw new RuntimeException("No new email received");
+        }
+
+        return getSentEmailMessages().get(emailIndex);
+    }
+
+    public WebResponse clickNextEmailLink(String emailAddress, String linkText) throws IOException, SAXException {
+        MailServicePb.MailMessage emailMessage = popNextEmailMessage();
+        String linkHref = getLinkHrefWith("http://localhost/mail", emailMessage.getHtmlBody(), linkText);
+        setLoggedInUser(emailAddress, false);
+        return client.getResponse(linkHref);
+    }
+
+    public WebResponse clickNextEmailLink(VolunteerConfig volunteerConfig, String linkText)
+            throws IOException, SAXException {
+        return clickNextEmailLink(volunteerConfig.getEmail(), linkText);
     }
 }

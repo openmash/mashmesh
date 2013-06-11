@@ -32,7 +32,7 @@ public class PatientSignupTest {
     @Test
     public void testPatientSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();
-        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.patient1Config);
+        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.PATIENT_1);
 
         // 1. Client lands on the root page
         WebResponse landingPage = client.getResponse("http://localhost/");
@@ -42,19 +42,19 @@ public class PatientSignupTest {
 
         // 3. Patient fills out the signup form
         WebForm signupForm = signupPage.getForms()[0];
-        assertEquals(IntegrationTestConstants.patient1Config.getEmail(), signupForm.getParameterValue("email"));
+        assertEquals(IntegrationTestConstants.PATIENT_1.getEmail(), signupForm.getParameterValue("email"));
 
-        signupForm.setParameter("name", IntegrationTestConstants.patient1Config.getName());
-        signupForm.setParameter("location", IntegrationTestConstants.patient1Config.getAddress());
+        signupForm.setParameter("name", IntegrationTestConstants.PATIENT_1.getName());
+        signupForm.setParameter("location", IntegrationTestConstants.PATIENT_1.getAddress());
         WebResponse signupPagePostSubmit = signupForm.submit();
 
         // 4. Patient is informed that the page was submitted successfully
         signupPagePostSubmit.getElementsWithAttribute("class", "alert alert-success");
         WebForm signupFormPostSubmit = signupPagePostSubmit.getForms()[0];
-        assertEquals(IntegrationTestConstants.patient1Config.getName(), signupFormPostSubmit.getParameterValue("name"));
-        assertEquals(IntegrationTestConstants.patient1Config.getEmail(),
+        assertEquals(IntegrationTestConstants.PATIENT_1.getName(), signupFormPostSubmit.getParameterValue("name"));
+        assertEquals(IntegrationTestConstants.PATIENT_1.getEmail(),
                 signupFormPostSubmit.getParameterValue("email"));
-        assertEquals(IntegrationTestConstants.patient1Config.getAddress(),
+        assertEquals(IntegrationTestConstants.PATIENT_1.getAddress(),
                 signupFormPostSubmit.getParameterValue("location"));
 
         // 5. Make sure that we saved the new user as a patient

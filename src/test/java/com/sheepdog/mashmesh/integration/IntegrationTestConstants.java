@@ -7,17 +7,22 @@ import org.joda.time.DateTimeConstants;
 import java.util.Arrays;
 
 public class IntegrationTestConstants {
-    public static final PatientConfig patient1Config = new PatientConfig()
+    public static final PatientConfig PATIENT_1 = new PatientConfig()
             .setName("John Smith")
             .setEmail("john.smith@example.com")
             .setAddress(TestLocationConstants.EAST_BAYSHORE_EPA_ADDRESS);
 
-    public static final PatientConfig patient2Config = new PatientConfig()
+    public static final PatientConfig PATIENT_2 = new PatientConfig()
             .setName("Chris Travis")
             .setEmail("chris.travis@example.com")
             .setAddress(TestLocationConstants.MENLO_PARK_ADDRESS);
 
-    public static final VolunteerConfig volunteer1Config = new VolunteerConfig()
+    public static final PatientConfig DISTANT_PATIENT = new PatientConfig()
+            .setName("James Gravel")
+            .setEmail("james.gravel@example.com")
+            .setAddress(TestLocationConstants.OAKLAND_ADDRESS);
+
+    public static final VolunteerConfig VOLUNTEER_1 = new VolunteerConfig()
             .setName("Diane Fraser")
             .setEmail("diane.fraser@gmail.com")
             .setComments("I will try to be five minutes early")
@@ -33,4 +38,7 @@ public class IntegrationTestConstants {
                     new AvailableTimePeriod().setDay(DateTimeConstants.THURSDAY).setStartTime(6).setEndTime(8),
                     new AvailableTimePeriod().setDay(DateTimeConstants.SATURDAY).setStartTime(13).setEndTime(20)
             ));
+
+    public static final String VOLUNTEER_1_UNAVAILABLE_TIME = "2013-06-06T10:20:00-0700";
+    public static final String VOLUNTEER_1_AVAILABLE_TIME = "2013-06-05T16:30:00-0700";
 }

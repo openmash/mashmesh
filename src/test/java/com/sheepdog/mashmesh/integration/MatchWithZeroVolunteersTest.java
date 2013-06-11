@@ -35,13 +35,13 @@ public class MatchWithZeroVolunteersTest {
 
     @Test
     public void testMatchWithoutVolunteer() throws IOException, SAXException {
-        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);
         integrationTestHelper.setNotLoggedIn();
 
         ServletUnitClient client = integrationTestHelper.getClient();
 
         WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
+        request.setParameter("patientEmail", IntegrationTestConstants.PATIENT_1.getEmail());
         request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
         request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
 

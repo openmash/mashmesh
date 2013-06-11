@@ -42,8 +42,8 @@ public class MatchWithOneVolunteerTest {
     @Test
     public void testMatchWithOneVolunteerUnavailable() throws IOException, SAXException {
         // 1. Sign up a patient and a volunteer
-        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
-        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.volunteer1Config);
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);
+        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.VOLUNTEER_1);
 
         integrationTestHelper.setNotLoggedIn();
 
@@ -51,38 +51,51 @@ public class MatchWithOneVolunteerTest {
 
         // 2. Trigger the appointment notification endpoint
         WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
+        request.setParameter("patientEmail", IntegrationTestConstants.PATIENT_1.getEmail());
         request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
-
-        // Volunteer 1 is not available at 10:20 AM on Thursday
-        request.setParameter("appointmentTime", "2013-06-06T10:20:00-0700");
+        request.setParameter("appointmentTime", IntegrationTestConstants.VOLUNTEER_1_UNAVAILABLE_TIME);
 
         WebResponse response = client.getResponse(request);
         assertEquals(200, response.getResponseCode());
 
+        // 3. Make sure that a task was dispatched to the task queue
         assertEquals(1, integrationTestHelper.getTaskCount(SendNotificationTask.QUEUE_NAME));
         assertTrue(integrationTestHelper.waitForTask());
 
-        // 3. Make sure that we sent out a "no pickup available" notification
-        List<MailServicePb.MailMessage> sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(1, sentMessages.size());
-
-        MailServicePb.MailMessage sentPatientMessage = sentMessages.get(0);
+        // 4. Make sure that we sent out a "no pickup available" notification
+        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
+        MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
 
-        // 4. Make sure that no exportable ride record was generated
+        // 5. Make sure that no exportable ride record was generated
         assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
 
-        // 5. Make sure the ride request was deleted
+        // 6. Make sure the ride request was deleted
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
+    }
+
+    @Test
+    public void testMatchWithPatientTooFarAway() throws IOException, SAXException {
+        // 1. Sign up a patient and a volunteer, with the patient further away than the volunteer's
+        //    maximum distance
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.DISTANT_PATIENT);
+        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.VOLUNTEER_1);
+
+        // 2. Trigger the notification endpoint for the patient
+        integrationTestHelper.runNotification(IntegrationTestConstants.DISTANT_PATIENT,
+                TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS,
+                IntegrationTestConstants.VOLUNTEER_1_AVAILABLE_TIME);
+
+        // 3. Make sure that a "no pickup available" message was sent
+        MailServicePb.MailMessage patientMessage = integrationTestHelper.popNextEmailMessage();
+        assertTrue(patientMessage.getSubject().startsWith("No Pickup Available"));
     }
 
     @Test
     public void testMatchWithOneVolunteerAccepted() throws IOException, SAXException, URISyntaxException {
         // 1. Sign up a patient and a volunteer
-        User patientUser = integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
-        User volunteerUser = integrationTestHelper.signUpVolunteer(IntegrationTestConstants.volunteer1Config);
+        User patientUser = integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);
+        User volunteerUser = integrationTestHelper.signUpVolunteer(IntegrationTestConstants.VOLUNTEER_1);
 
         integrationTestHelper.setNotLoggedIn();
 
@@ -90,23 +103,20 @@ public class MatchWithOneVolunteerTest {
 
         // 2. Trigger the appointment notification endpoint
         WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
+        request.setParameter("patientEmail", IntegrationTestConstants.PATIENT_1.getEmail());
         request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
-
-        // Volunteer 1 is available at 4:30 PM on Wednesday
-        request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
+        request.setParameter("appointmentTime", IntegrationTestConstants.VOLUNTEER_1_AVAILABLE_TIME);
 
         WebResponse response = client.getResponse(request);
         assertEquals(200, response.getResponseCode());
 
+        // 3. Make sure that a task was dispatched to the task queue.
         assertEquals(1, integrationTestHelper.getTaskCount(SendNotificationTask.QUEUE_NAME));
         assertTrue(integrationTestHelper.waitForTask());
 
-        // 3. Make sure that we sent out a pickup request
-        List<MailServicePb.MailMessage> sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(1, sentMessages.size());
-        MailServicePb.MailMessage sentVolunteerMessage = sentMessages.get(0);
+        // 4. Make sure that we sent out a pickup request
+        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
+        MailServicePb.MailMessage sentVolunteerMessage = integrationTestHelper.popNextEmailMessage();
 
         assertTrue(sentVolunteerMessage.getSubject().startsWith("Appointment Pickup"));
 
@@ -114,7 +124,7 @@ public class MatchWithOneVolunteerTest {
                 integrationTestHelper.getHtmlClientForString("http://localhost/mail", sentVolunteerMessage.getHtmlBody());
         String acceptLink = wrapper.getPage().getAnchorByText("Accept").getHrefAttribute();
 
-        // 4. Make sure that the map link is valid
+        // 5. Make sure that the map link is valid
         HtmlElement mapImageElement = wrapper.getPage().getElementsByTagName("img").get(0);
         String mapImageSrc = mapImageElement.getAttribute("src");
         List<String> mapPathParams = integrationTestHelper.getQueryStringParameter(mapImageSrc, "path");
@@ -126,146 +136,85 @@ public class MatchWithOneVolunteerTest {
         List<Point> points =  new PolylineDecoder(polyline).getPoints();
         assertTrue(points.size() > 0);
 
-        // 5. Accept the pickup request sent in the email
-        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.volunteer1Config);
+        // 6. Accept the pickup request sent in the email
+        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.VOLUNTEER_1);
         WebResponse acceptPage = client.getResponse(acceptLink);
         assertEquals("Pickup Accepted", acceptPage.getElementsByTagName("h1")[0].getText());
 
-        // 6. Make sure that we sent a notification to the patient.
-        sentMessages = integrationTestHelper.getSentEmailMessages();
-        MailServicePb.MailMessage sentPatientMessage = sentMessages.get(1);
-
+        // 7. Make sure that we sent a notification to the patient.
+        assertEquals(2, integrationTestHelper.getSentEmailMessages().size());
+        MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("Appointment Pickup"));
 
-        // 7. Make sure that an exportable ride record was generated
+        // 8. Make sure that an exportable ride record was generated
         List<RideRecord> rideRecords = CollectionUtils.listOfIterator(RideRecord.getExportableRecords().iterator());
-        assertTrue(rideRecords.size() == 1);
+        assertEquals(1, rideRecords.size());
 
         RideRecord rideRecord = rideRecords.get(0);
         assertEquals(UserProfile.get(patientUser).getKey(), rideRecord.getPatientProfileKey());
         assertEquals(UserProfile.get(volunteerUser).getKey(), rideRecord.getVolunteerUserProfileKey());
 
-        // 8. Make sure the ride request was deleted
+        // 9. Make sure the ride request was deleted
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
     @Test
     public void testMatchWithOneVolunteerDeclined() throws IOException, SAXException {
         // 1. Sign up a patient and a volunteer
-        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
-        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.volunteer1Config);
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);
+        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.VOLUNTEER_1);
 
         integrationTestHelper.setNotLoggedIn();
 
-        ServletUnitClient client = integrationTestHelper.getClient();
-
         // 2. Trigger the notification endpoint
-        WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
-        request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
+        integrationTestHelper.runNotification(IntegrationTestConstants.PATIENT_1,
+                TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS,
+                IntegrationTestConstants.VOLUNTEER_1_AVAILABLE_TIME);
 
-        // Volunteer 1 is available at 4:20 PM on Wednesday.
-        request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
-
-        WebResponse response = client.getResponse(request);
-        assertEquals(200, response.getResponseCode());
-
-        assertTrue(integrationTestHelper.waitForTask());
-
-        // 3. Make sure that we sent out a pickup request
-        List<MailServicePb.MailMessage> sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(1, sentMessages.size());
-        MailServicePb.MailMessage sentVolunteerMessage = sentMessages.get(0);
-
-        assertTrue(sentVolunteerMessage.getSubject().startsWith("Appointment Pickup"));
-
-        String declineLink = integrationTestHelper.getLinkHrefWith("http://localhost/mail",
-                sentVolunteerMessage.getHtmlBody(), "Decline");
-
-        // 4. Decline the appointment pickup request
-        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.volunteer1Config);
-        WebResponse declinePage = client.getResponse(declineLink);
+        // 3. Decline the appointment pickup request
+        WebResponse declinePage = integrationTestHelper.clickNextEmailLink(
+                IntegrationTestConstants.VOLUNTEER_1, "Decline");
         assertEquals("Pickup Declined", declinePage.getElementsByTagName("h1")[0].getText());
-
         assertTrue(integrationTestHelper.waitForTask());
 
-        // 5. Make sure that we send out a pickup failed notification
-        sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(2, sentMessages.size());
-
-        MailServicePb.MailMessage sentPatientMessage = sentMessages.get(1);
+        // 4. Make sure that we send out a pickup failed notification
+        MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
 
-        // 6. Make sure that no exportable ride record was generated
+        // 5. Make sure that no exportable ride record was generated
         assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
 
-        // 7. Make sure the ride request was deleted
+        // 6. Make sure the ride request was deleted
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
     @Test
     public void testMatchWithOneVolunteerBusy() throws IOException, SAXException {
         // 1. Sign up two patients and a volunteer
-        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient1Config);
-        integrationTestHelper.signUpPatient(IntegrationTestConstants.patient2Config);
-        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.volunteer1Config);
-
-        integrationTestHelper.setNotLoggedIn();
-
-        ServletUnitClient client = integrationTestHelper.getClient();
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);
+        integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_2);
+        integrationTestHelper.signUpVolunteer(IntegrationTestConstants.VOLUNTEER_1);
 
         // 2. Trigger the notification endpoint for the second patient
-        WebRequest request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient2Config.getEmail());
-        request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
+        integrationTestHelper.runNotification(IntegrationTestConstants.PATIENT_2,
+                TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS,
+                IntegrationTestConstants.VOLUNTEER_1_AVAILABLE_TIME);
 
-        // Volunteer 1 is available at 4:20 PM on Wednesday.
-        request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
-
-        WebResponse response = client.getResponse(request);
-        assertEquals(200, response.getResponseCode());
-
-        assertTrue(integrationTestHelper.waitForTask());
-
-        // 3. Make sure that we sent out a pickup request
-        List<MailServicePb.MailMessage> sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(1, sentMessages.size());
-        MailServicePb.MailMessage sentVolunteerMessage = sentMessages.get(0);
-
-        assertTrue(sentVolunteerMessage.getSubject().startsWith("Appointment Pickup"));
-
-        String acceptLink = integrationTestHelper.getLinkHrefWith("http://localhost/mail",
-                sentVolunteerMessage.getHtmlBody(), "Accept");
-
-        // 4. Accept the appointment pickup request
-        integrationTestHelper.setLoggedInUser(IntegrationTestConstants.volunteer1Config);
-        WebResponse acceptPage = client.getResponse(acceptLink);
+        // 3. Accept the appointment pickup request
+        WebResponse acceptPage = integrationTestHelper.clickNextEmailLink(
+                IntegrationTestConstants.VOLUNTEER_1, "Accept");
         assertEquals(200, acceptPage.getResponseCode());
 
+        // 4. Skip the notification email to the patient
+        integrationTestHelper.popNextEmailMessage();
+
         // 5. Trigger the notification endpoint for the first patient
-        integrationTestHelper.setNotLoggedIn();
-        request = new PostMethodWebRequest("http://localhost/resources/notification");
-        request.setParameter("patientEmail", IntegrationTestConstants.patient1Config.getEmail());
-        request.setParameter("appointmentAddress", TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS);
-
-        // Volunteer 1 is available at 4:20 PM on Wednesday, but the timeslot is now busy
-        request.setParameter("appointmentTime", "2013-06-05T16:30:00-0700");
-
-        response = client.getResponse(request);
-        assertEquals(200, response.getResponseCode());
-
-        assertTrue(integrationTestHelper.waitForTask());
+        integrationTestHelper.runNotification(IntegrationTestConstants.PATIENT_1,
+                TestLocationConstants.PALO_ALTO_MEDICAL_FOUNDATION_ADDRESS,
+                IntegrationTestConstants.VOLUNTEER_1_AVAILABLE_TIME);
 
         // 6. Make sure that the a "no pickup available" message was sent.
-        sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        // There should be a pickup request, a success message, and a failed message.
-        assertEquals(3, sentMessages.size());
-
-        MailServicePb.MailMessage sentPatient1Message = sentMessages.get(2);
+        MailServicePb.MailMessage sentPatient1Message = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatient1Message.getSubject().startsWith("No Pickup Available"));
     }
 }
