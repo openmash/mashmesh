@@ -37,6 +37,8 @@ import org.apache.velocity.VelocityContext;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -46,6 +48,8 @@ import javax.servlet.http.HttpSession;
 public class EditUserProfileServlet extends HttpServlet {
     private static final String CREATE_PROFILE_TEMPLATE_PATH = "site/create.vm";
     private static final String EDIT_PROFILE_TEMPLATE_PATH = "site/edit.vm";
+
+    private static final Logger logger = Logger.getLogger(EditUserProfileServlet.class.getCanonicalName());
 
     private UserProfile getUserProfile(HttpServletRequest req) throws IOException {
         return (UserProfile) req.getAttribute("userProfile");
@@ -153,6 +157,7 @@ public class EditUserProfileServlet extends HttpServlet {
 
         initializeUserProfile(req, userProfile);
 
+        boolean isValid = true;
         String fullName = req.getParameter("name");
         String email = req.getParameter("email");
         String address = req.getParameter("location"); // TODO: Fix naming conventions
@@ -160,9 +165,12 @@ public class EditUserProfileServlet extends HttpServlet {
         try {
             location = GeoUtils.geocode(address);
         } catch (GeocodeFailedException e) {
-            e.printStackTrace();  // TODO
+            logger.log(Level.SEVERE, "Geocoding '" + address + "' failed", e);
+            resp.setStatus(500);
+            return;
         } catch (GeocodeNotFoundException e) {
-            e.printStackTrace();  // TODO
+            logger.log(Level.WARNING, "Invalid location: '" + address + "'", e);
+            isValid = false;
         }
 
         String comments = req.getParameter("comments");
@@ -183,8 +191,6 @@ public class EditUserProfileServlet extends HttpServlet {
 
             volunteerProfile.setLocation(location);
         }
-
-        boolean isValid = true; // TODO: Validation
 
         if (!isValid) {
             resp.setStatus(400);
