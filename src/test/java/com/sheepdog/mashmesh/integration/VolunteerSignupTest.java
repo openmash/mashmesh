@@ -86,5 +86,7 @@ public class VolunteerSignupTest {
         VolunteerProfile volunteerProfile = VolunteerProfile.get(userProfile);
         assertEquals(new HashSet<AvailableTimePeriod>(IntegrationTestConstants.VOLUNTEER_1.getAvailableTimePeriods()),
                 new HashSet<AvailableTimePeriod>(volunteerProfile.getAvailableTimePeriods()));
+
+        integrationTestHelper.observeRateLimit();
     }
 }

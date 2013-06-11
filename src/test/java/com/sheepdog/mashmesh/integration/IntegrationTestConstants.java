@@ -41,4 +41,22 @@ public class IntegrationTestConstants {
 
     public static final String VOLUNTEER_1_UNAVAILABLE_TIME = "2013-06-06T10:20:00-0700";
     public static final String VOLUNTEER_1_AVAILABLE_TIME = "2013-06-05T16:30:00-0700";
+
+    public static final VolunteerConfig VOLUNTEER_2 = new VolunteerConfig()
+            .setName("Taylor Osmond")
+            .setEmail("t.osmond42@gmail.com")
+            .setMaximumDistance(10)
+            .setAddress(TestLocationConstants.E_OKEEFE_EPA_ADDRESS)
+            .setAvailableTimePeriods(Arrays.asList(
+                    new AvailableTimePeriod().setDay(DateTimeConstants.MONDAY).setStartTime(10).setEndTime(18),
+                    new AvailableTimePeriod().setDay(DateTimeConstants.TUESDAY).setStartTime(10).setEndTime(18),
+                    new AvailableTimePeriod().setDay(DateTimeConstants.WEDNESDAY).setStartTime(10).setEndTime(18),
+                    new AvailableTimePeriod().setDay(DateTimeConstants.FRIDAY).setStartTime(10).setEndTime(18)
+            ));
+
+    public static final String ONLY_VOLUNTEER_2_UNAVAILABLE_TIME = "2013-06-06T07:00:00-0700";
+    public static final String ONLY_VOLUNTEER_2_AVAILABLE_TIME = "2013-06-10T13:00:00-0700";
+
+    public static final String VOLUNTEER_1_AND_2_UNAVAILABLE_TIME = "2013-06-06T12:00:00-0700";
+    public static final String VOLUNTEER_1_AND_2_AVAILABLE_TIME = "2013-06-04T14:00:00-0700";
 }

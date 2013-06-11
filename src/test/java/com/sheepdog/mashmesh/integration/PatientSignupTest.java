@@ -64,5 +64,7 @@ public class PatientSignupTest {
 
         // 6. Make sure that we assigned them a location somewhere around East Palo Alto
         assertTrue(GeoUtils.distanceMiles(userProfile.getLocation(), TestLocationConstants.EAST_BAYSHORE_EPA_GEOPT) < 4);
+
+        integrationTestHelper.observeRateLimit();
     }
 }

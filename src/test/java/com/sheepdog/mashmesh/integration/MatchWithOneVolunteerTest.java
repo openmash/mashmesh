@@ -23,8 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class MatchWithOneVolunteerTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
@@ -68,7 +67,7 @@ public class MatchWithOneVolunteerTest {
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
 
         // 5. Make sure that no exportable ride record was generated
-        assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
+        assertFalse(RideRecord.getExportableRecords().iterator().hasNext());
 
         // 6. Make sure the ride request was deleted
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
@@ -182,7 +181,7 @@ public class MatchWithOneVolunteerTest {
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
 
         // 5. Make sure that no exportable ride record was generated
-        assertTrue(!RideRecord.getExportableRecords().iterator().hasNext());
+        assertFalse(RideRecord.getExportableRecords().iterator().hasNext());
 
         // 6. Make sure the ride request was deleted
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());

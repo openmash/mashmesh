@@ -100,7 +100,6 @@ public class IntegrationTestHelper {
 
         localServiceTestHelper.tearDown();
         nextEmailIndex = 0;
-        observeRateLimit();
     }
 
     public ServletRunner getServletRunner() {
@@ -274,11 +273,15 @@ public class IntegrationTestHelper {
         return getSentEmailMessages().get(emailIndex);
     }
 
-    public WebResponse clickNextEmailLink(String emailAddress, String linkText) throws IOException, SAXException {
-        MailServicePb.MailMessage emailMessage = popNextEmailMessage();
+    public WebResponse clickEmailLink(String emailAddress, MailServicePb.MailMessage emailMessage, String linkText)
+            throws IOException, SAXException {
         String linkHref = getLinkHrefWith("http://localhost/mail", emailMessage.getHtmlBody(), linkText);
         setLoggedInUser(emailAddress, false);
         return client.getResponse(linkHref);
+    }
+
+    public WebResponse clickNextEmailLink(String emailAddress, String linkText) throws IOException, SAXException {
+        return clickEmailLink(emailAddress, popNextEmailMessage(), linkText);
     }
 
     public WebResponse clickNextEmailLink(VolunteerConfig volunteerConfig, String linkText)

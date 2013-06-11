@@ -11,10 +11,7 @@ import com.sheepdog.mashmesh.models.VolunteerProfile;
 import com.sheepdog.mashmesh.util.ApplicationConfiguration;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 public class VolunteerLocator {
@@ -110,7 +107,16 @@ public class VolunteerLocator {
         if (volunteerProfiles.size() == 0) {
             return null;
         } else {
-            return volunteerProfiles.iterator().next();
+            Collections.sort(volunteerProfiles, new Comparator<VolunteerProfile>() {
+                @Override
+                public int compare(VolunteerProfile profileA, VolunteerProfile profileB) {
+                    double distanceA = GeoUtils.distance(profileA.getLocation(), getPatientLocation());
+                    double distanceB = GeoUtils.distance(profileB.getLocation(), getPatientLocation());
+                    return (int) Math.signum(distanceA - distanceB);
+                }
+            });
+
+            return volunteerProfiles.get(0);
         }
     }
 

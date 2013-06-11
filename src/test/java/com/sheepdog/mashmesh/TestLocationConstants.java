@@ -6,7 +6,10 @@ public class TestLocationConstants {
     public static final String EAST_BAYSHORE_EPA_ADDRESS = "1760 East Bayshore Road, East Palo Alto, CA";
     public static final GeoPt EAST_BAYSHORE_EPA_GEOPT = new GeoPt(37.4597f, -122.137973f);
 
-    public static final String UNIVERSITY_AVENUE_PA_ADDRESS = "1000 University Avenue, Palo Alto, CA";
+    public static final String E_OKEEFE_EPA_ADDRESS = "209 East O'Keefe Street, East Palo Alto, CA";
+    public static final GeoPt E_OKEEFE_EPA_GEOPT = new GeoPt(37.462354f, -122.149847f);
+
+    public static final String UNIVERSITY_AVENUE_PA_ADDRESS = "220 University Avenue, Palo Alto, CA";
     public static final GeoPt UNIVERSITY_AVENUE_PA_GEOPT = new GeoPt(37.444969f, -122.162521f);
 
     public static final String MENLO_PARK_ADDRESS = "611 Coleman Avenue, Menlo Park, CA";
