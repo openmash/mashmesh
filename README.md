@@ -1,8 +1,13 @@
 OpenMash Volunteer Ride Sharing (VRS)
 =====================================
 
-TODO: Write a short blurb about the purpose of the application and where it
-      can be found.
+The OpenMash Volunteer Ride Sharing (VRS) application demonstrates how the OpenMash
+integration bus extends the reach of VistA by leveraging SaaS offerings such as the Google
+Application Engine (GAE)  and Google Apps. Volunteers and patients in the VA system
+register to be matched up. When an appointment is scheduled for a patient, an available
+volunteer is located, and a pickup request is sent to them with detailed directions.
+Volunteers may accept or decline the request; if the request is declined, another volunteer
+will be notified.
 
 Installation
 ------------
