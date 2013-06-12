@@ -33,6 +33,11 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * Tests for the case that an appointment notification is sent for a patient while
+ * there are two volunteers in the system. These tests are representative of the
+ * behaviour of the system when there are three or more volunteers present as well.
+ */
 public class MatchWithTwoVolunteersTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
 
@@ -46,6 +51,12 @@ public class MatchWithTwoVolunteersTest {
         integrationTestHelper.tearDown();
     }
 
+    /**
+     * Integration test for the case that an appointment pickup request is accepted
+     * by the first volunteer to receive it. The patient should receive a pickup notification,
+     * and a record of the pickup should be recorded. No further requests should be sent
+     * to volunteers.
+     */
     @Test
     public void testFirstVolunteerAcceptsRequest() throws IOException, SAXException {
         // 1. Sign up a patient and two volunteers
@@ -83,6 +94,12 @@ public class MatchWithTwoVolunteersTest {
         assertEquals(volunteer2UserProfileKey, rideRecords.get(0).getVolunteerUserProfileKey());
     }
 
+    /**
+     * Integration test for the case that the appointment pickup request is for a time period
+     * in which only one of the volunteers is available, and that volunteer declines the request.
+     * The other volunteer should not be notified, and the patient should receive a notification
+     * that no pickup is available.
+     */
     @Test
     public void testOnlyAvailableVolunteerDeclinesRequest() throws IOException, SAXException {
         // 1. Sign up a patient and two volunteers
@@ -116,6 +133,12 @@ public class MatchWithTwoVolunteersTest {
         assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), patientMessage.tos());
     }
 
+    /**
+     * Integration test for the case that both volunteers are available for the time period
+     * indicated by an appointment pickup request, and the first declines, while the second
+     * accepts it. The patient should be notified of the pickup, and a record of the pickup
+     * should be captured for later export. No other notifications should occur.
+     */
     @Test
     public void testSecondVolunteerAcceptsRequest() throws IOException, SAXException {
         // 1. Sign up a patient and two volunteers
@@ -163,6 +186,11 @@ public class MatchWithTwoVolunteersTest {
         assertEquals(volunteer1UserProfileKey, rideRecords.get(0).getVolunteerUserProfileKey());
     }
 
+    /**
+     * Integration test for the case that both available volunteers decline the appointment
+     * request. The patient should be notified that a pickup could not be arranged, and no
+     * further requests or notifications should be sent.
+     */
     @Test
     public void testBothVolunteersDeclineRequest() throws IOException, SAXException {
         // 1. Sign up a patient and two volunteers

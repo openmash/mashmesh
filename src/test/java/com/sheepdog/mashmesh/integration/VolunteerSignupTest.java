@@ -35,6 +35,9 @@ import java.util.HashSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests related to volunteers creating accounts in the system
+ */
 public class VolunteerSignupTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
 
@@ -48,6 +51,10 @@ public class VolunteerSignupTest {
         integrationTestHelper.tearDown();
     }
 
+    /**
+     * Integration test which walks through the process of a new volunteer landing
+     * on the home page and signing up.
+     */
     @Test
     public void testVolunteerSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();

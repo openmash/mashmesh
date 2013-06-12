@@ -31,6 +31,9 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
+/**
+ * Tests related to patients creating accounts in the system
+ */
 public class PatientSignupTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
 
@@ -44,6 +47,10 @@ public class PatientSignupTest {
         integrationTestHelper.tearDown();
     }
 
+    /**
+     * Integration test which walks through the process of a new patient landing
+     * on the home page, and signing up.
+     */
     @Test
     public void testPatientSignsUp() throws IOException, SAXException {
         ServletUnitClient client = integrationTestHelper.getClient();

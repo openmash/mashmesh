@@ -21,6 +21,10 @@ import org.joda.time.DateTimeConstants;
 
 import java.util.Arrays;
 
+/**
+ * IntegrationTestConstants contains sample patients and volunteers that
+ * are used in the integration test suite.
+ */
 public class IntegrationTestConstants {
     public static final PatientConfig PATIENT_1 = new PatientConfig()
             .setName("John Smith")
@@ -32,6 +36,7 @@ public class IntegrationTestConstants {
             .setEmail("chris.travis@example.com")
             .setAddress(TestLocationConstants.MENLO_PARK_ADDRESS);
 
+    // A patient which is too far away from either volunteer to schedule a pickup
     public static final PatientConfig DISTANT_PATIENT = new PatientConfig()
             .setName("James Gravel")
             .setEmail("james.gravel@example.com")

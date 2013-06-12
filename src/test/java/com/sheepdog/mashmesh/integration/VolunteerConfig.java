@@ -19,6 +19,9 @@ import com.sheepdog.mashmesh.models.AvailableTimePeriod;
 
 import java.util.List;
 
+/**
+ * Builder class which represents a volunteer used in an integration test.
+ */
 public class VolunteerConfig {
     private String name;
     private String email;

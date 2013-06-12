@@ -36,6 +36,10 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests for the case that an appointment notification is sent for a patient
+ * when there are no volunteers in the system.
+ */
 public class MatchWithZeroVolunteersTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
 
@@ -49,6 +53,10 @@ public class MatchWithZeroVolunteersTest {
         integrationTestHelper.tearDown();
     }
 
+    /**
+     * Integration test which checks that match failure notifications are sent to
+     * patients when there are no volunteers in the system to match them with.
+     */
     @Test
     public void testMatchWithoutVolunteer() throws IOException, SAXException {
         integrationTestHelper.signUpPatient(IntegrationTestConstants.PATIENT_1);

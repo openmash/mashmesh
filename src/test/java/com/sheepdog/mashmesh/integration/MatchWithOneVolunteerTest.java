@@ -41,6 +41,10 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
+/**
+ * Tests for the case that an appointment notification is sent to a patient
+ * with one volunteer in the system.
+ */
 public class MatchWithOneVolunteerTest {
     private final IntegrationTestHelper integrationTestHelper = new IntegrationTestHelper();
 
@@ -54,6 +58,11 @@ public class MatchWithOneVolunteerTest {
         integrationTestHelper.tearDown();
     }
 
+    /**
+     * Integration test for the case where the only volunteer in the system is not
+     * available for the specified appointment time. The patient should be notified
+     * that no pickup is available.
+     */
     @Test
     public void testMatchWithOneVolunteerUnavailable() throws IOException, SAXException {
         // 1. Sign up a patient and a volunteer
@@ -90,6 +99,11 @@ public class MatchWithOneVolunteerTest {
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
+    /**
+     * Integration test for the case that the only volunteer in the system is too
+     * far away to pick up the patient. The patient should be notified that no pickup
+     * is available.
+     */
     @Test
     public void testMatchWithPatientTooFarAway() throws IOException, SAXException {
         // 1. Sign up a patient and a volunteer, with the patient further away than the volunteer's
@@ -109,6 +123,14 @@ public class MatchWithOneVolunteerTest {
                 patientMessage.tos());
     }
 
+    /**
+     * Integration test for the case that the only volunteer in the system is available,
+     * close enough to pick up the patient, and accepts the request. The volunteer should
+     * receive a notification with an accept link and a static map with directions, while
+     * the patient should receive a pickup notification after the volunteer accepts the
+     * request. Additionally, a record of the match should be logged to be exported to
+     * Fusion Tables at a later time.
+     */
     @Test
     public void testMatchWithOneVolunteerAccepted() throws IOException, SAXException, URISyntaxException {
         // 1. Sign up a patient and a volunteer
@@ -178,6 +200,11 @@ public class MatchWithOneVolunteerTest {
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
+    /**
+     * Integration test for the case that the only volunteer in the system is available and
+     * close enough to pick up the patient, but declines the request. The patient should
+     * receive a notification that no pickup is available.
+     */
     @Test
     public void testMatchWithOneVolunteerDeclined() throws IOException, SAXException {
         // 1. Sign up a patient and a volunteer
@@ -210,6 +237,12 @@ public class MatchWithOneVolunteerTest {
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
     }
 
+    /**
+     * Integration test for the case that the only volunteer in the system is available
+     * and close enough to pick up the patient, but has previously accepted a request to
+     * pick up a patient in a time interval that overlaps with the new request. The patient
+     * should receive a notification that no pickup was available.
+     */
     @Test
     public void testMatchWithOneVolunteerBusy() throws IOException, SAXException {
         // 1. Sign up two patients and a volunteer

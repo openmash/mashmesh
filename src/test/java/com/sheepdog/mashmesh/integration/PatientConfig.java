@@ -15,6 +15,9 @@
  */
 package com.sheepdog.mashmesh.integration;
 
+/**
+ * Builder class which represents a patient used in an integration test.
+ */
 public class PatientConfig {
     private String name;
     private String email;
