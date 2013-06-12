@@ -16,15 +16,27 @@
 package com.sheepdog.mashmesh.resources;
 
 import com.sheepdog.mashmesh.models.RideRequest;
+import com.sheepdog.mashmesh.models.UserProfile;
 import com.sheepdog.mashmesh.tasks.SendNotificationTask;
 import org.joda.time.DateTime;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 @Path("/notification")
 public class SendNotificationResource {
     private static final String QUEUE_NAME = "notifications";
+
+    private void verifyPatientEmail(String patientEmail) {
+        UserProfile patientProfile = UserProfile.getByEmail(patientEmail);
+        if (patientProfile == null || patientProfile.getType() != UserProfile.UserType.PATIENT) {
+            Response response = Response.status(Response.Status.NOT_FOUND)
+                    .entity("No such patient: " + patientEmail)
+                    .build();
+            throw new WebApplicationException(response);
+        }
+    }
 
     @POST
     @Produces({MediaType.TEXT_PLAIN})
@@ -37,6 +49,8 @@ public class SendNotificationResource {
             // TODO: Actually report errors with bean validation.
             throw new WebApplicationException(400);
         }
+
+        verifyPatientEmail(patientEmail);
 
         DateTime appointmentTime = DateTime.parse(appointmentTimeRfc339);
         RideRequest request = SendNotificationTask.createRequest(patientEmail, appointmentAddress, appointmentTime);
