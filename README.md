@@ -20,9 +20,9 @@ to build and run mashmesh.
 
 ### Obtaining the Source Code
 
-You can obtain a copy of the source code by downloading a snapshot of
-[https://github.com/openmash/mashmesh/archive/master.zip](https://github.com/openmash/mashmesh/archive/master.zip),
-or by issuing the command `git clone git://github.com/openmash/mashmesh.git`. 
+You can obtain a copy of the source code by downloading a
+[snapshot of the master branch](https://github.com/openmash/mashmesh/archive/master.zip)
+from github, or by issuing the command `git clone git://github.com/openmash/mashmesh.git`. 
 
 
 ### Configuring API Access
