@@ -22,15 +22,13 @@ public class EmailUtils {
         Message message = new MimeMessage(session);
         message.setFrom(senderAddress);
         message.addRecipient(Message.RecipientType.TO, recipientAddress);
-
-        if (bcc != null) {
-            InternetAddress bccAddress = new InternetAddress(bcc);
-            message.addRecipient(Message.RecipientType.BCC, bccAddress);
-        }
-
         message.setSubject(subject);
         message.setContent(htmlMessage, "text/html");
         Transport.send(message);
+
+        if (bcc != null) {
+            sendEmail(bcc, subject, htmlMessage, null);
+        }
     }
 
     public static void sendEmail(String recipient, String subject, String htmlMessage) throws MessagingException {

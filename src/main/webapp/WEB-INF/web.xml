@@ -118,6 +118,7 @@
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>any</web-resource-name>
+            <url-pattern>/debug/*</url-pattern>
             <url-pattern>/tasks/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>

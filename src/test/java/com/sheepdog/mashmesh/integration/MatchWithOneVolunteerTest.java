@@ -21,6 +21,7 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -62,9 +63,10 @@ public class MatchWithOneVolunteerTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // 4. Make sure that we sent out a "no pickup available" notification
-        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()),
+                sentPatientMessage.tos());
 
         // 5. Make sure that no exportable ride record was generated
         assertFalse(RideRecord.getExportableRecords().iterator().hasNext());
@@ -88,6 +90,8 @@ public class MatchWithOneVolunteerTest {
         // 3. Make sure that a "no pickup available" message was sent
         MailServicePb.MailMessage patientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(patientMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.DISTANT_PATIENT.getEmail()),
+                patientMessage.tos());
     }
 
     @Test
@@ -114,10 +118,11 @@ public class MatchWithOneVolunteerTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // 4. Make sure that we sent out a pickup request
-        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage sentVolunteerMessage = integrationTestHelper.popNextEmailMessage();
 
         assertTrue(sentVolunteerMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.VOLUNTEER_1.getEmail()),
+                sentVolunteerMessage.tos());
 
         IntegrationTestHelper.HtmlClientWrapper wrapper =
                 integrationTestHelper.getHtmlClientForString("http://localhost/mail", sentVolunteerMessage.getHtmlBody());
@@ -141,9 +146,10 @@ public class MatchWithOneVolunteerTest {
         assertEquals("Pickup Accepted", acceptPage.getElementsByTagName("h1")[0].getText());
 
         // 7. Make sure that we sent a notification to the patient.
-        assertEquals(2, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()),
+                sentPatientMessage.tos());
 
         // 8. Make sure that an exportable ride record was generated
         List<RideRecord> rideRecords = CollectionUtils.listOfIterator(RideRecord.getExportableRecords().iterator());
@@ -179,6 +185,8 @@ public class MatchWithOneVolunteerTest {
         // 4. Make sure that we send out a pickup failed notification
         MailServicePb.MailMessage sentPatientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatientMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()),
+                sentPatientMessage.tos());
 
         // 5. Make sure that no exportable ride record was generated
         assertFalse(RideRecord.getExportableRecords().iterator().hasNext());
@@ -215,5 +223,7 @@ public class MatchWithOneVolunteerTest {
         // 6. Make sure that the a "no pickup available" message was sent.
         MailServicePb.MailMessage sentPatient1Message = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentPatient1Message.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()),
+                sentPatient1Message.tos());
     }
 }

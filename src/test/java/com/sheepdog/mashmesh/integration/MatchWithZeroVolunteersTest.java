@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -52,14 +53,9 @@ public class MatchWithZeroVolunteersTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // Make sure that we sent out a match failure notification
-        List<MailServicePb.MailMessage> sentMessages = integrationTestHelper.getSentEmailMessages();
-
-        assertEquals(1, sentMessages.size());
-
-        // XXX: Due to bugs in the local mail service, we can't get the To, CC, or BCC lists.
-        MailServicePb.MailMessage sentMessage = sentMessages.get(0);
-
+        MailServicePb.MailMessage sentMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), sentMessage.tos());
 
         // Make sure that no ride requests remain
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());

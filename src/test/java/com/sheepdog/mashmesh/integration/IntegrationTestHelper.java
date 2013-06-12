@@ -266,8 +266,13 @@ public class IntegrationTestHelper {
         nextEmailIndex++;
         List<MailServicePb.MailMessage> sentMessages = getSentEmailMessages();
 
-        if (emailIndex >= sentMessages.size()) {
-            throw new RuntimeException("No new email received");
+        while (sentMessages.get(emailIndex).toSize() == 0) {
+            emailIndex++;
+            nextEmailIndex++;
+
+            if (emailIndex >= sentMessages.size()) {
+                throw new RuntimeException("No new email received");
+            }
         }
 
         return getSentEmailMessages().get(emailIndex);

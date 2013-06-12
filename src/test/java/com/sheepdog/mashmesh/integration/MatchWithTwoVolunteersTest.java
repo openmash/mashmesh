@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -43,9 +44,9 @@ public class MatchWithTwoVolunteersTest {
                 IntegrationTestConstants.VOLUNTEER_1_AND_2_AVAILABLE_TIME);
 
         // 3. Make sure that volunteer 2 (who is closer) got the request
-        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage sentMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(sentMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.VOLUNTEER_2.getEmail()), sentMessage.tos());
 
         // XXX: The AppEngine mail API stubs don't give addressing info, so check the ride request itself.
         RideRequest rideRequest = OfyService.ofy().query(RideRequest.class).get();
@@ -57,9 +58,9 @@ public class MatchWithTwoVolunteersTest {
         integrationTestHelper.clickEmailLink(IntegrationTestConstants.VOLUNTEER_2.getEmail(), sentMessage, "Accept");
 
         // 5. Make sure that the confirmation was sent to the patient
-        assertEquals(2, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage patientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(patientMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), patientMessage.tos());
 
         // 6. Make sure that an exportable ride record was logged for the volunteer
         List<RideRecord> rideRecords = CollectionUtils.listOfIterator(RideRecord.getExportableRecords().iterator());
@@ -80,13 +81,13 @@ public class MatchWithTwoVolunteersTest {
                 IntegrationTestConstants.ONLY_VOLUNTEER_2_UNAVAILABLE_TIME);
 
         // 3. Make sure that volunteer 1 got the request.
-        assertEquals(1, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage volunteerMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(volunteerMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.VOLUNTEER_1.getEmail()),
+                volunteerMessage.tos());
 
         // XXX: Work around the lack of addressing information in AppEngine's mail test stub
         RideRequest rideRequest = OfyService.ofy().query(RideRequest.class).get();
-        Key<UserProfile> volunteer1UserProfileKey = Key.create(UserProfile.class, volunteer1.getUserId());
         Key<VolunteerProfile> volunteer1ProfileKey = Key.create(VolunteerProfile.class, volunteer1.getUserId());
         assertEquals(volunteer1ProfileKey, rideRequest.getPendingVolunteerProfileKey());
 
@@ -95,9 +96,9 @@ public class MatchWithTwoVolunteersTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // 5. Make sure that the patient was notified that a pickup is not available.
-        assertEquals(2, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage patientMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(patientMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), patientMessage.tos());
     }
 
     @Test
@@ -117,9 +118,10 @@ public class MatchWithTwoVolunteersTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // 4. Make sure that the request was sent to volunteer 1 after volunteer 2 declined it.
-        assertEquals(2, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage volunteerMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(volunteerMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.VOLUNTEER_1.getEmail()),
+                volunteerMessage.tos());
 
         RideRequest rideRequest = OfyService.ofy().query(RideRequest.class).get();
         Key<UserProfile> volunteer1UserProfileKey = Key.create(UserProfile.class, volunteer1.getUserId());
@@ -133,7 +135,9 @@ public class MatchWithTwoVolunteersTest {
         assertEquals("Pickup Accepted", acceptPage.getElementsByTagName("h1")[0].getText());
 
         // 6. Make sure that the patient was notified.
-        assertEquals(3, integrationTestHelper.getSentEmailMessages().size());
+        MailServicePb.MailMessage patientMessage = integrationTestHelper.popNextEmailMessage();
+        assertTrue(patientMessage.getSubject().startsWith("Appointment Pickup"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), patientMessage.tos());
 
         // 7. Make sure that the ride request was cleaned up.
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
@@ -169,9 +173,9 @@ public class MatchWithTwoVolunteersTest {
         assertTrue(integrationTestHelper.waitForTask());
 
         // 5. Make sure that the patient was notified.
-        assertEquals(3, integrationTestHelper.getSentEmailMessages().size());
         MailServicePb.MailMessage mailMessage = integrationTestHelper.popNextEmailMessage();
         assertTrue(mailMessage.getSubject().startsWith("No Pickup Available"));
+        assertEquals(Collections.singletonList(IntegrationTestConstants.PATIENT_1.getEmail()), mailMessage.tos());
 
         // 6. Make sure that the ride request was cleaned up.
         assertEquals(0, OfyService.ofy().query(RideRequest.class).count());
