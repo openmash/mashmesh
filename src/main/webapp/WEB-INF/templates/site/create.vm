@@ -11,9 +11,9 @@
         #parse("site/topBar.vm")
 
         <p>
-            Welcome to VTNCloud! This site connects patients in the VA Health system with volunteers
-            who can help drive them to their medical appointments. Click the link below that
-            describes you to sign up and get involved!
+            Welcome to the OpenMash Volunteer Ridesharing System! This site connects patients
+            in the VA Health system with volunteers who can help drive them to their medical appointments.
+            Click the link below that describes you to sign up and get involved!
         </p>
         <div class="create-user-container">
             <a class="primary-button" href="/view/profile/?userType=PATIENT">I am a patient</a>
