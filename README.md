@@ -107,3 +107,29 @@ to the application identifier you chose when creating your AppEngine
 application. Execute the command `mvn appengine:update` to deploy your
 application. When deployment finishes, you will be able to access the
 application at `http://<your-application-identifier>.appspot.com`.
+
+
+Automated Tests
+---------------
+
+The OpenMash Volunteer RideSharing application has a suite of unit and
+integration tests located in the `src/test/` directory hierarchy, which
+can be executed by invoking `mvn test`. Test results are stored in the
+`target/surefire-reports/` directory after the test suite finishes.
+
+### Unit Tests
+
+The application has a collection of unit tests, which are namespaced
+to the same packages as the functionality that they test under `src/test/`.
+The unit tests cover the more complex functionality, such as formatting
+data to submit to Fusion Tables and locating available volunteers.
+
+### Integration Tests
+
+The application also has a suite of end-to-end integration tests in the
+`com.sheepdog.mashmesh.integration` package. The integration tests
+drive the application using [HttpUnit](http://httpunit.sourceforge.net/)
+to simulate a click-through of the web interface, and intercepts
+transactional email using the Google AppEngine testing stubs. See the
+comments in the source code in the integration test package for more
+information about the individual integration tests.
