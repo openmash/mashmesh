@@ -166,6 +166,7 @@ public class Itinerary {
             directionLeg.startLatLng = getLatLng(leg.getAsJsonObject("start_location"));
             directionLeg.arrivalTime = legArrivalTime;
             directionLeg.endLatLng = getLatLng(leg.getAsJsonObject("end_location"));
+            directionLeg.distanceMeters = leg.getAsJsonObject("distance").get("value").getAsInt();
             directionLeg.steps = Collections.unmodifiableList(directionSteps);
             directionLegs.add(directionLeg);
         }
