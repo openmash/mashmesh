@@ -133,3 +133,14 @@ to simulate a click-through of the web interface, and intercepts
 transactional email using the Google AppEngine testing stubs. See the
 comments in the source code in the integration test package for more
 information about the individual integration tests.
+
+
+Library Licensing
+-----------------
+
+This project also uses resources from the following open-source libraries:
+
+* [Bootstrap](http://twitter.github.io/bootstrap/) ([Apache 2.0 licensed](https://raw.github.com/twitter/bootstrap/master/LICENSE))
+* [Parsley.js](http://parsleyjs.org/) ([MIT licensed](https://raw.github.com/guillaumepotier/Parsley.js/master/LICENCE.md))
+* [uni-form](http://sprawsm.com/uni-form/) ([MIT licensed](https://github.com/draganbabic/uni-form/blob/master/README.md))
+* [Font Awesome](http://fortawesome.github.io/Font-Awesome/) ([SIL OFL 1.1 licensed](http://fortawesome.github.io/Font-Awesome/license/))
