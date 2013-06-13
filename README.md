@@ -140,6 +140,7 @@ Library Licensing
 
 This project also uses resources from the following open-source libraries:
 
+* [jQuery](http://jquery.com/) ([MIT licensed](https://raw.github.com/jquery/jquery/master/MIT-LICENSE.txt))
 * [Bootstrap](http://twitter.github.io/bootstrap/) ([Apache 2.0 licensed](https://raw.github.com/twitter/bootstrap/master/LICENSE))
 * [Parsley.js](http://parsleyjs.org/) ([MIT licensed](https://raw.github.com/guillaumepotier/Parsley.js/master/LICENCE.md))
 * [uni-form](http://sprawsm.com/uni-form/) ([MIT licensed](https://github.com/draganbabic/uni-form/blob/master/README.md))
